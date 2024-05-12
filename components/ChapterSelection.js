@@ -32,8 +32,8 @@ const ChapterSelection = ({ navigation }) => {
         <Text style={styles.headerText}>学習開始場所を選択してください</Text>
         <Text style={[styles.label, {marginTop:20}]}>1. 章の先頭から開始する　　　　　</Text>
   
-/*    <View style={[styles.pickerContainer, {marginTop: 0}]}>
-          <RNPickerSelect
+   <View style={[styles.pickerContainer, {marginTop: 0}]}> //ここを消す予定
+          <RNPickerSelect 
             onValueChange={(value) => handleChapterSelect(value)}
             items={[
               { label: '1章', value: '1-1' },
@@ -84,8 +84,7 @@ const ChapterSelection = ({ navigation }) => {
               },
             }}
           />
-*/
-
+          
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>2. 問題番号を直接入力</Text>
