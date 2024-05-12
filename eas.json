@@ -1,0 +1,19 @@
+{
+  "cli": {
+    "version": ">= 7.8.2"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {} // "ios" プロパティを追加
+    },
+    "production": {}
+  },
+  "submit": {
+    "production": {}
+  }
+}
