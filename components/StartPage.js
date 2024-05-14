@@ -100,6 +100,12 @@ const handleTest = async () => {
           title="テスト"
           onPress={handleTest}
         />
+
+        <Button
+          title="ピッカーテスト"
+          onPress={hPickerTestScreen}
+        />
+        
       </View>
     </View>
   );
