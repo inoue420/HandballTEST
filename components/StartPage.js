@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { } from 'react';
 import { View, Button, Text, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -71,14 +71,14 @@ const handleTest = async () => {
   return (
     <View style={styles.container}>
       <View style={styles.titleBox}>
-        <Text style={styles.title}>I wanna be </Text>
-        <Text style={styles.title}>the Top Referee</Text>
+        <Text style={styles.title}>Handball Rules </Text>
+        <Text style={[styles.title, {fontSize: 25}]}>～ツーミニッツの館～</Text>
       </View>
 
       <View style={styles.buttonContainer}>
         <Button
           title="学習開始"
-          onPress={handleChapterSelection} // ChapterSelectionへのリンク
+          onPress={handleChapterSelection} 
         />
 
         <Button
