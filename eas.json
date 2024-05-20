@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 7.8.2"
+    "version": ">= 7.8.2",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -9,11 +10,21 @@
     },
     "preview": {
       "distribution": "internal",
-      "ios": {} // "ios" プロパティを追加
+      "ios": {}
     },
-    "production": {}
+    "production": {
+      "ios": {}
+    }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "inotake420@yahoo.co.jp",
+        "ascAppId": "6502761559",
+        "appleTeamId": "83427FXVCY",
+        "ascApiKeyPath": "C:\\Users\\81902\\Documents\\handball\\AuthKey_FJX5PKZ69W.p8",
+        "ascApiKeyId": "FJX5PKZ69W"
+      }
+    }
   }
 }
