@@ -47,7 +47,6 @@ const QuizPage = ({ route }) => {
       await saveWrongAnsweredQuestion(wrongQuestionId);
     }
   };
-
   const handleNextQuestion = () => {
     if (currentQuestionIndex === questions.length - 1) {
       console.log('End of quiz');
