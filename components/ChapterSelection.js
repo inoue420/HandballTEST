@@ -6,7 +6,7 @@ const ChapterSelection = ({ navigation }) => {
   const [directInputValue2, setDirectInputValue2] = useState('');
 
   const handleStartChapter = () => {
-    let chapterId = '1-1'; // デフォルトの章番号
+    let chapterId = `${directInputValue1}-${directInputValue2}`;
     navigation.navigate('Quiz', { selectedId: chapterId });
   };
 
