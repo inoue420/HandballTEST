@@ -5,6 +5,10 @@ import questions from './questions';
 import AnswerButton from './AnswerButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
+
+const adUnitId ='ca-app-pub-4399954903316919/7557182852'; //バナー実装のためのコマンド
+
 
 const QuizPage = ({ route }) => {
   
@@ -77,6 +81,19 @@ const QuizPage = ({ route }) => {
   };
 
   return (
+    <View style={styles.container}>
+      <View style={styles.banner}>
+        <BannerAd
+          unitId={adUnitId}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{
+            networkExtras: {
+              collapsible: 'bottom',
+            },
+          }}
+        />
+      </View>
+    
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
   <View style={styles.container}>
     <View style={styles.questionContainer}>
@@ -107,10 +124,20 @@ const QuizPage = ({ route }) => {
     )}
   </View>
 </ScrollView>
+</View>
   );
 };
 
 const styles = StyleSheet.create({
+  banner: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white', // バナーの背景色を調整
+  },
+
   scrollViewContainer: {
     flexGrow: 1, // ビューポートの高さに対して成長する
   },
@@ -118,6 +145,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 40, // バナーの高さ分の余白を追加
+
   },
   questionContainer: {
     marginBottom: 20,

@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Button, KeyboardAvoidingView } from 'react-native';
+import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
+
+const adUnitId ='ca-app-pub-4399954903316919/7557182852'; //バナー実装のためのコマンド
+
 
 const ChapterSelection = ({ navigation }) => {
   const [directInputValue1, setDirectInputValue1] = useState('');
@@ -16,8 +20,22 @@ const ChapterSelection = ({ navigation }) => {
   };
 
   return (
+    <View style={styles.container}>
+      <View style={styles.banner}>
+        <BannerAd
+          unitId={adUnitId}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{
+            networkExtras: {
+              collapsible: 'bottom',
+            },
+          }}
+        />
+      </View>
+
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <View style={styles.innerContainer}>
+       
         <Text style={styles.headerText}>学習開始場所を選択してください</Text>
         <Text style={[styles.label, {marginTop:20}]}>1. 最初から開始する　　　　　</Text>
 
@@ -57,6 +75,7 @@ const ChapterSelection = ({ navigation }) => {
         </View>
       </View>
     </KeyboardAvoidingView>
+    </View>
   );
 };
 
@@ -65,6 +84,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  banner: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white', // バナーの背景色を調整
   },
   innerContainer: {
     width: '80%', // 画面幅の80%に制限する

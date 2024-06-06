@@ -1,6 +1,10 @@
 import React, { } from 'react';
-import { View, Button, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomButton from './CustomButton'; // カスタムボタンのインポート
+import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
+
+const adUnitId ='ca-app-pub-4399954903316919/7557182852'; //バナー実装のためのコマンド
 
 const StartPage = ({ navigation }) => {
 
@@ -69,34 +73,47 @@ const handleTest = async () => {
 };
 
   return (
+    
     <View style={styles.container}>
+      <View style={styles.banner}>
+        <BannerAd
+          unitId={adUnitId}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{
+            networkExtras: {
+              collapsible: 'bottom',
+            },
+          }}
+        />
+      </View>
+
       <View style={styles.titleBox}>
-        <Text style={styles.title}>Handball Rules </Text>
-        <Text style={[styles.title, {fontSize: 25}]}>～ツーミニッツの館～</Text>
+  <Text style={[styles.title, { textAlign: 'center' }]}>Handball Rules</Text>
+  <Text style={[styles.title, { fontSize: 25, textAlign: 'center' }]}>～ツーミニッツの館～</Text>
       </View>
 
       <View style={styles.buttonContainer}>
-        <Button
+        <CustomButton
           title="学習開始"
           onPress={handleChapterSelection} 
         />
 
-        <Button
+        <CustomButton
           title="復習開始(1週目)"
           onPress={handleReview}
         />
 
-        <Button
+        <CustomButton
           title="復習開始(2週目)"
           onPress={handleReview2}
         />
 
-        <Button
+        <CustomButton
           title="誤答履歴を確認"
           onPress={handleAnswerHistory}
         />
 
-        <Button
+        <CustomButton
           title="テスト"
           onPress={handleTest}
         />
@@ -136,8 +153,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  
+  banner: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white', // バナーの背景色を調整
+  },
+
   titleBox: {
-    marginBottom: 20,
+    marginBottom: 40,
   },
   title: {
     fontSize: 40,

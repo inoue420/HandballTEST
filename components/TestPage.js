@@ -5,6 +5,9 @@ import questions from './questions';
 import ChoiceButton from './ChoiceButton';
 import AnswerButton from './AnswerButton';
 import { useNavigation } from '@react-navigation/native';
+import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
+
+const adUnitId ='ca-app-pub-4399954903316919/7557182852'; //バナー実装のためのコマンド
 
 const TestPage = () => {
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -69,7 +72,8 @@ const TestPage = () => {
 
   const handleAnswerButtonClick = async () => {
     const correctAnswers = questions.find(question => question.id === questionIdList[questionIndex]).correctAnswers;
-    const isCorrect = selectedAnswers.every(answer => correctAnswers.includes(answer));
+const isCorrect = selectedAnswers.every(answer => correctAnswers.includes(answer)) && selectedAnswers.length === correctAnswers.length;
+
   
     setIsCorrect(isCorrect);
     setAnswered(true);
@@ -93,6 +97,18 @@ const TestPage = () => {
   };
 
   return (
+    <View style={styles.container}>
+    <View style={styles.banner}>
+      <BannerAd
+        unitId={adUnitId}
+        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+        requestOptions={{
+          networkExtras: {
+            collapsible: 'bottom',
+          },
+        }}
+      />
+    </View>
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       <View style={styles.container}>
         <View style={styles.questionContainer}>
@@ -142,10 +158,21 @@ const TestPage = () => {
         </View>
       </View>
     </ScrollView>
+    </View>
+
   );
 };
 
 const styles = StyleSheet.create({
+  banner: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white', // バナーの背景色を調整
+  },
+
   scrollViewContainer: {
     flexGrow: 1,
   },
@@ -153,6 +180,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 40, // バナーの高さ分の余白を追加
   },
   questionContainer: {
     marginBottom: 20,
