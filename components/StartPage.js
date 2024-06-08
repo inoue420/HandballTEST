@@ -1,12 +1,37 @@
-import React, { } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from './CustomButton'; // カスタムボタンのインポート
 import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency'; // App Tracking Transparencyのリクエストを追加
 
-const adUnitId ='ca-app-pub-4399954903316919/7557182852'; //バナー実装のためのコマンド
+
+const adUnitId = {
+  android: {
+    adUnitId: 'ca-app-pub-4399954903316919/6717510377' // Android用の広告ユニットID
+  },
+  ios: {
+    adUnitId: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
+  }
+};
+
 
 const StartPage = ({ navigation }) => {
+  useEffect(() => {
+    // スタートページがマウントされたときにApp Tracking Transparencyのパーミッションをリクエスト
+    const requestTrackingPermission = async () => {
+      try {
+        const { status } = await requestTrackingPermissionsAsync();
+        if (status === 'granted') {
+          console.log('User has granted permission for tracking data');
+        }
+      } catch (error) {
+        console.error('Error requesting tracking permission:', error);
+      }
+    };
+    
+    requestTrackingPermission();
+  }, []); // マウント時に1度だけリクエスト
 
   // 復習ボタンが押されたときの処理
   const handleReview = () => {

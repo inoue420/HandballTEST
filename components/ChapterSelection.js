@@ -2,8 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Button, KeyboardAvoidingView } from 'react-native';
 import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
 
-const adUnitId ='ca-app-pub-4399954903316919/7557182852'; //バナー実装のためのコマンド
-
+const adUnitId = {
+  android: {
+    adUnitId: 'ca-app-pub-4399954903316919/6717510377' // Android用の広告ユニットID
+  },
+  ios: {
+    adUnitId: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
+  }
+};
 
 const ChapterSelection = ({ navigation }) => {
   const [directInputValue1, setDirectInputValue1] = useState('');

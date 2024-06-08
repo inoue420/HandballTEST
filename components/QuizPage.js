@@ -7,8 +7,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
 
-const adUnitId ='ca-app-pub-4399954903316919/7557182852'; //バナー実装のためのコマンド
-
+const adUnitId = {
+  android: {
+    adUnitId: 'ca-app-pub-4399954903316919/6717510377' // Android用の広告ユニットID
+  },
+  ios: {
+    adUnitId: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
+  }
+};
 
 const QuizPage = ({ route }) => {
   

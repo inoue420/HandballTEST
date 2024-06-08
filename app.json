@@ -2,7 +2,7 @@
   "expo": {
     "name": "Handball Rules",
     "slug": "my-quiz-project",
-    "version": "1.3.0",
+    "version": "1.3.2",
     "orientation": "portrait",
     "icon": "./assets/handball Rules_icon3.png",
     "userInterfaceStyle": "light",
@@ -31,7 +31,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/handball Rules_icon3_and.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.inotake420.handballrules"
