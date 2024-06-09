@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native'; // ScrollView をインポート
+import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native'; // ScrollView をインポート
 import ChoiceButton from './ChoiceButton';
 import questions from './questions';
 import AnswerButton from './AnswerButton';
@@ -7,14 +7,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
 
-const adUnitId = {
-  android: {
-    adUnitId: 'ca-app-pub-4399954903316919/6717510377' // Android用の広告ユニットID
-  },
-  ios: {
-    adUnitId: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
-  }
+const adUnitIds = {
+  android: 'ca-app-pub-4399954903316919/6717510377', // Android用の広告ユニットID
+  ios: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
 };
+
+const adUnitId = Platform.select({
+  android: adUnitIds.android,
+  ios: adUnitIds.ios,
+});
 
 const QuizPage = ({ route }) => {
   

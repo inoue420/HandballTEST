@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Button, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Button, KeyboardAvoidingView, Platform } from 'react-native';
 import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
 
-const adUnitId = {
-  android: {
-    adUnitId: 'ca-app-pub-4399954903316919/6717510377' // Android用の広告ユニットID
-  },
-  ios: {
-    adUnitId: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
-  }
+const adUnitIds = {
+  android: 'ca-app-pub-4399954903316919/6717510377', // Android用の広告ユニットID
+  ios: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
 };
+
+const adUnitId = Platform.select({
+  android: adUnitIds.android,
+  ios: adUnitIds.ios,
+});
 
 const ChapterSelection = ({ navigation }) => {
   const [directInputValue1, setDirectInputValue1] = useState('');

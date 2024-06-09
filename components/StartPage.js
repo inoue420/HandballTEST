@@ -1,19 +1,21 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from './CustomButton'; // カスタムボタンのインポート
 import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency'; // App Tracking Transparencyのリクエストを追加
 
+//const adUnitId = 'ca-app-pub-4399954903316919/7557182852';
 
-const adUnitId = {
-  android: {
-    adUnitId: 'ca-app-pub-4399954903316919/6717510377' // Android用の広告ユニットID
-  },
-  ios: {
-    adUnitId: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
-  }
+const adUnitIds = {
+  android: 'ca-app-pub-4399954903316919/6717510377', // Android用の広告ユニットID
+  ios: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
 };
+
+const adUnitId = Platform.select({
+  android: adUnitIds.android,
+  ios: adUnitIds.ios,
+});
 
 
 const StartPage = ({ navigation }) => {
