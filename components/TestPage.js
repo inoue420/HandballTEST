@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import questions from './questions';
 import ChoiceButton from './ChoiceButton';
@@ -7,8 +7,15 @@ import AnswerButton from './AnswerButton';
 import { useNavigation } from '@react-navigation/native';
 import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
 
-const adUnitId ='ca-app-pub-4399954903316919/7557182852'; //バナー実装のためのコマンド
+const adUnitIds = {
+  android: 'ca-app-pub-4399954903316919/6717510377', // Android用の広告ユニットID
+  ios: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
+};
 
+const adUnitId = Platform.select({
+  android: adUnitIds.android,
+  ios: adUnitIds.ios,
+});
 const TestPage = () => {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [questionIdList, setQuestionIdList] = useState([]);

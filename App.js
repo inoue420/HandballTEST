@@ -10,6 +10,10 @@ import ReviewPage2 from './components/ReviewPage2';
 import TestPage from './components/TestPage';
 import ChapterSelection from './components/ChapterSelection';
 import 'expo-dev-client';
+import RuleList from './components/RuleList';
+import RuleExplanation from './components/RuleExplanation'
+import StudySessions from './components/StudySessions';
+import TodayQuestionsPage from './components/TodayQuestionsPage';
 
 const Stack = createStackNavigator();
 
@@ -25,7 +29,12 @@ const App = () => {
         <Stack.Screen name="Review2" component={ReviewPage2} />
         <Stack.Screen name="Chapter" component={ChapterSelection} />
         <Stack.Screen name="Test" component={TestPage} />
-      </Stack.Navigator>
+        <Stack.Screen name="RuleList" component={RuleList} />
+        <Stack.Screen name="RuleExplanation" component={RuleExplanation} />
+        <Stack.Screen name="StudySessions" component={StudySessions} />
+        <Stack.Screen name="TodayQuestionsPage" component={TodayQuestionsPage} />
+
+       </Stack.Navigator>
     </NavigationContainer>
   );
 };

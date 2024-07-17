@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity } from 'react-native';
-import ChoiceButton from './ChoiceButton';
-import questions from './questions';
-import AnswerButton from './AnswerButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import questions from './questions'; // 問題データのインポート
+import ChoiceButton from './ChoiceButton'; // 選択肢ボタンのインポート
+import AnswerButton from './AnswerButton'; // 回答ボタンのインポート
 import { useNavigation } from '@react-navigation/native';
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 
 const adUnitIds = {
-  android: 'ca-app-pub-4399954903316919/6717510377',
-  ios: 'ca-app-pub-4399954903316919/7557182852',
+  android: 'ca-app-pub-4399954903316919/6717510377', // Android用の広告ユニットID
+  ios: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
 };
 
 const adUnitId = Platform.select({
@@ -17,61 +17,70 @@ const adUnitId = Platform.select({
   ios: adUnitIds.ios,
 });
 
-const QuizPage = ({ route }) => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState([]);
-  const [answered, setAnswered] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(null);
+const TodayQuestionsPage = () => {
+  const [questionIndex, setQuestionIndex] = useState(0); // 問題のインデックス
+  const [questionIds, setQuestionIds] = useState([]); // 問題IDのリスト
+  const [selectedAnswers, setSelectedAnswers] = useState([]); // 選択された回答
+  const [answered, setAnswered] = useState(false); // 回答済みフラグ
+  const [isCorrect, setIsCorrect] = useState(false); // 正解フラグ
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (route.params && route.params.selectedId) {
-      const selectedId = route.params.selectedId;
-      const index = questions.findIndex(question => question.id === selectedId);
-      if (index !== -1) {
-        setCurrentQuestionIndex(index);
+    const loadTodayQuestionIds = async () => {
+      try {
+        const storedIds = await AsyncStorage.getItem('todayIds'); // AsyncStorageから今日の問題IDを取得
+        if (storedIds) {
+          const ids = JSON.parse(storedIds);
+          setQuestionIds(ids);
+        } else {
+          console.log('No todayIds stored in AsyncStorage');
+        }
+      } catch (error) {
+        console.error('Error loading todayIds:', error);
       }
-    }
-  }, [route.params.selectedId]);
+    };
 
-  const handleAnswer = (selectedAnswer) => {
+    loadTodayQuestionIds();
+  }, []);
+
+  const handleNextQuestion = () => {
+    if (questionIndex < questionIds.length - 1) {
+      setQuestionIndex(questionIndex + 1);
+      setSelectedAnswers([]);
+      setAnswered(false);
+      setIsCorrect(false);
+    } else {
+      console.log('End of today\'s question list');
+      navigation.navigate('End'); // 問題終了時に画面遷移
+    }
+  };
+
+  const handleAnswer = (selectedOption) => {
     setSelectedAnswers((prevSelectedAnswers) => {
-      if (prevSelectedAnswers.includes(selectedAnswer)) {
-        return prevSelectedAnswers.filter((answer) => answer !== selectedAnswer);
+      if (prevSelectedAnswers.includes(selectedOption)) {
+        return prevSelectedAnswers.filter((answer) => answer !== selectedOption);
       } else {
-        return [...prevSelectedAnswers, selectedAnswer];
+        return [...prevSelectedAnswers, selectedOption];
       }
     });
   };
 
   const handleAnswerButtonClick = async () => {
-    const correctAnswers = questions[currentQuestionIndex].correctAnswers;
-    const selectedAnswersSorted = [...selectedAnswers].sort();
-    const correctAnswersSorted = [...correctAnswers].sort();
-    const isCorrect = selectedAnswersSorted.length > 0 && JSON.stringify(selectedAnswersSorted) === JSON.stringify(correctAnswersSorted);
+    const currentQuestion = questions.find(question => question.id === questionIds[questionIndex]);
+    const correctAnswers = currentQuestion.correctAnswers;
+    const isCorrect = selectedAnswers.every(answer => correctAnswers.includes(answer)) && selectedAnswers.length === correctAnswers.length;
+
     setIsCorrect(isCorrect);
     setAnswered(true);
 
     if (!isCorrect) {
-      const wrongQuestionId = questions[currentQuestionIndex].id;
-      await saveWrongAnsweredQuestion(wrongQuestionId);
-    }
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex === questions.length - 1) {
-      console.log('End of quiz');
-      navigation.navigate('End');
-    } else {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswers([]);
-      setAnswered(false);
-      setIsCorrect(null);
+      const currentQuestionId = questionIds[questionIndex];
+      await saveWrongAnsweredQuestion(currentQuestionId); // 間違った問題IDを保存
     }
   };
 
   const handleExplanation = () => {
-    const ruleIds = questions[currentQuestionIndex].ruleIds; // ルールIDを取得
+    const ruleIds = questions[questionIndex].ruleIds; // ルールIDを取得
     navigation.navigate('RuleExplanation', { ruleIds });
   };
 
@@ -83,17 +92,18 @@ const QuizPage = ({ route }) => {
       } else {
         wrongAnsweredQuestions = JSON.parse(wrongAnsweredQuestions);
       }
-      wrongAnsweredQuestions.push(questionId);
-      console.log('Wrong question ID to be saved:', questionId);
-      console.log('Data to be saved:', JSON.stringify(wrongAnsweredQuestions));
+
+      wrongAnsweredQuestions.push(questionId); // 間違った問題IDを配列に追加
       await AsyncStorage.setItem('wrongAnsweredQuestions', JSON.stringify(wrongAnsweredQuestions));
     } catch (error) {
       console.error('Error saving wrong answered question:', error);
     }
   };
 
+  const currentQuestion = questions.find(question => question.id === questionIds[questionIndex]);
+
   return (
-    <View style={styles.container}>
+    <View style={styles.mainContainer}>
       <View style={styles.banner}>
         <BannerAd
           unitId={adUnitId}
@@ -106,22 +116,23 @@ const QuizPage = ({ route }) => {
         />
       </View>
       <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-        <View style={styles.container}>
+        <View style={styles.contentContainer}>
           <View style={styles.questionContainer}>
-            <Text>{questions[currentQuestionIndex].question}</Text>
+            <Text>{currentQuestion ? currentQuestion.question : 'Loading...'}</Text>
           </View>
           <View style={styles.optionsContainer}>
-            {questions[currentQuestionIndex].options.map((option, index) => (
+            {currentQuestion && currentQuestion.options.map((option, index) => (
               <ChoiceButton
-                key={index}
+                key={option}
                 label={`${String.fromCharCode(97 + index)}) ${option}`}
                 onPress={() => handleAnswer(option)}
                 selected={selectedAnswers.includes(option)}
+                disabled={answered}
               />
             ))}
           </View>
           <View style={styles.answerButtonContainer}>
-            <AnswerButton title="回答する" onPress={handleAnswerButtonClick} />
+            <AnswerButton title="回答する" onPress={handleAnswerButtonClick} disabled={!selectedAnswers.length || answered} />
           </View>
           {answered && (
             <View style={styles.resultContainer}>
@@ -156,7 +167,11 @@ const styles = StyleSheet.create({
   scrollViewContainer: {
     flexGrow: 1,
   },
-  container: {
+  mainContainer: {
+    flex: 1,
+    paddingTop: 40,
+  },
+  contentContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -191,4 +206,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default QuizPage;
+export default TodayQuestionsPage;
