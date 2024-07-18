@@ -11,7 +11,7 @@ const RuleExplanation = ({ route }) => {
   if (matchedRules.length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>関連する競技規則が見つかりません (ガイドライン・競技規則解釈は実装準備中です・・・)</Text>
+        <Text style={styles.title}>関連する競技規則が見つかりません (交代地域規定・ガイドライン・競技規則解釈は実装準備中です・・・)</Text>
       </View>
     );
   }
@@ -56,21 +56,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   item: {
-    backgroundColor: '#f9c2ff',
+    backgroundColor: '#F0FFF0',
     padding: 20,
     marginVertical: 8,
     marginHorizontal: 16,
   },
   titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'column', // Column direction to stack id and title vertically
+    alignItems: 'flex-start',
   },
   id: {
     fontSize: 16,
     marginRight: 4,
   },
   title: {
-    fontSize: 16,
+    fontSize: 12,
   },
   description: {
     fontSize: 14,

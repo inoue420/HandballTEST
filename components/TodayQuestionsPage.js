@@ -80,7 +80,8 @@ const TodayQuestionsPage = () => {
   };
 
   const handleExplanation = () => {
-    const ruleIds = questions[questionIndex].ruleIds; // ルールIDを取得
+    const currentQuestion = questions.find(question => question.id === questionIds[questionIndex]);
+    const ruleIds = currentQuestion.ruleIds; // ルールIDを取得
     navigation.navigate('RuleExplanation', { ruleIds });
   };
 

@@ -91,10 +91,14 @@ const ReviewPage = () => {
   
   const handleExplanation = () => {
     const currentQuestion = questions.find(question => question.id === questionIdList[questionIndex]);
-    const ruleIds = currentQuestion ? currentQuestion.ruleIds : [];
-    navigation.navigate('RuleExplanation', { ruleIds });
+    if (currentQuestion && currentQuestion.ruleIds) {
+      const ruleIds = currentQuestion.ruleIds; // ルールIDを取得
+      navigation.navigate('RuleExplanation', { ruleIds });
+    } else {
+      console.log('No ruleIds found for the current question');
+    }
   };
-
+  
   return (
     <View style={styles.mainContainer}>
       <View style={styles.banner}>

@@ -5,7 +5,7 @@ import questions from './questions';
 import ChoiceButton from './ChoiceButton';
 import AnswerButton from './AnswerButton';
 import { useNavigation } from '@react-navigation/native';
-import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 
 const adUnitIds = {
   android: 'ca-app-pub-4399954903316919/6717510377', // Android用の広告ユニットID
@@ -16,6 +16,7 @@ const adUnitId = Platform.select({
   android: adUnitIds.android,
   ios: adUnitIds.ios,
 });
+
 const TestPage = () => {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [questionIdList, setQuestionIdList] = useState([]);
@@ -43,7 +44,7 @@ const TestPage = () => {
               return aParts[1] - bParts[1];
             }
           });
-          
+
           setQuestionIdList(sortedIds);
         } else {
           console.log('No stored data or empty data in AsyncStorage');
@@ -79,9 +80,8 @@ const TestPage = () => {
 
   const handleAnswerButtonClick = async () => {
     const correctAnswers = questions.find(question => question.id === questionIdList[questionIndex]).correctAnswers;
-const isCorrect = selectedAnswers.every(answer => correctAnswers.includes(answer)) && selectedAnswers.length === correctAnswers.length;
+    const isCorrect = selectedAnswers.every(answer => correctAnswers.includes(answer)) && selectedAnswers.length === correctAnswers.length;
 
-  
     setIsCorrect(isCorrect);
     setAnswered(true);
 
@@ -105,68 +105,64 @@ const isCorrect = selectedAnswers.every(answer => correctAnswers.includes(answer
 
   return (
     <View style={styles.container}>
-    <View style={styles.banner}>
-      <BannerAd
-        unitId={adUnitId}
-        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        requestOptions={{
-          networkExtras: {
-            collapsible: 'bottom',
-          },
-        }}
-      />
-    </View>
-    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-      <View style={styles.container}>
-        <View style={styles.questionContainer}>
-          <Text>
-            {questionIdList.length > 0
-              ? questions.find(question => question.id === questionIdList[questionIndex]).question
-              : 'Loading...'}
-          </Text>
-        </View>
-        <View style={styles.optionsContainer}>
-          {questionIdList.length > 0 && (
-            questions.find(question => question.id === questionIdList[questionIndex]).options.map((option, index) => (
-              <ChoiceButton
-                key={index}
-                label={`${String.fromCharCode(97 + index)}) ${option}`}
-                onPress={() => handleAnswer(option)}
-                selected={selectedAnswers.includes(option)}
-                disabled={answered}
-              />
-            ))
-          )}
-        </View>
-        <View style={styles.answerButtonContainer}>
-          <AnswerButton title="回答する" onPress={handleAnswerButtonClick} disabled={!selectedAnswers.length || answered} />
-        </View>
-        {answered && (
-          <View style={styles.resultContainer}>
-            <Text style={styles.resultText}>{isCorrect ? '〇' : '×'}</Text>
-          </View>
-        )}
-        <View style={styles.countContainer}>
-
-        <Text style={styles.scoreRateText}>
-  スコア率: {correctAnswersCount === 0 ? 0 : ((correctSelectionCount - wrongSelectionCount) / correctAnswersCount * 100).toFixed(0)}%  
-  <Text style={styles.borderText}>  (A級85％, B級80％, C級60％がボーダー)</Text>
-</Text>
-
-          <Text style={styles.countText}>正答数: {correctAnswersCount}</Text>
-          <Text style={styles.countText}>正答選択数: {correctSelectionCount}</Text>
-          <Text style={styles.countText}>誤答選択数: {wrongSelectionCount}</Text>
-          <Text style={styles.countText}>問題番号: {questionIndex+1}/25</Text>
-
-
-        </View>
-        <View style={styles.nextButtonContainer}>
-          <AnswerButton title="Next" onPress={handleNextQuestion} disabled={!answered} />
-        </View>
+      <View style={styles.banner}>
+        <BannerAd
+          unitId={adUnitId}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{
+            networkExtras: {
+              collapsible: 'bottom',
+            },
+          }}
+        />
       </View>
-    </ScrollView>
+      <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+        <View style={styles.container}>
+          <View style={styles.questionContainer}>
+            <Text>
+              {questionIdList.length > 0
+                ? questions.find(question => question.id === questionIdList[questionIndex]).question
+                : 'Loading...'}
+            </Text>
+          </View>
+          <View style={styles.optionsContainer}>
+            {questionIdList.length > 0 && (
+              questions.find(question => question.id === questionIdList[questionIndex]).options.map((option, index) => (
+                <ChoiceButton
+                  key={index}
+                  label={`${String.fromCharCode(97 + index)}) ${option}`}
+                  onPress={() => handleAnswer(option)}
+                  selected={selectedAnswers.includes(option)}
+                  disabled={answered}
+                />
+              ))
+            )}
+          </View>
+          <View style={styles.answerButtonContainer}>
+            {answered ? (
+              <AnswerButton title="Next" onPress={handleNextQuestion} />
+            ) : (
+              <AnswerButton title="回答する" onPress={handleAnswerButtonClick} disabled={!selectedAnswers.length} />
+            )}
+          </View>
+          {answered && (
+            <View style={styles.resultContainer}>
+              <Text style={styles.resultText}>{isCorrect ? '〇' : '×'}</Text>
+            </View>
+          )}
+          <View style={styles.countContainer}>
+            <Text style={styles.scoreRateText}>
+              スコア率: {correctAnswersCount === 0 ? 0 : ((correctSelectionCount - wrongSelectionCount) / correctAnswersCount * 100).toFixed(0)}%
+              <Text style={styles.borderText}>  (A級85％, B級80％, C級60％がボーダー)</Text>
+            </Text>
+            <Text style={styles.countText}>正答数: {correctAnswersCount}</Text>
+            <Text style={styles.countText}>正答選択数: {correctSelectionCount}</Text>
+            <Text style={styles.countText}>誤答選択数: {wrongSelectionCount}</Text>
+            <Text style={styles.countText}>問題番号: {questionIndex + 1}/25</Text>
+          </View>
+        </View>
+      </ScrollView>
     </View>
-
   );
 };
 
@@ -179,7 +175,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'white', // バナーの背景色を調整
   },
-
   scrollViewContainer: {
     flexGrow: 1,
   },
@@ -211,18 +206,13 @@ const styles = StyleSheet.create({
   resultText: {
     fontSize: 5 * 16,
   },
-  nextButtonContainer: {
-    marginTop: 'auto',
-  },
   scoreRateText: {
     fontSize: 18,
     fontWeight: 'bold',
   },
   borderText: {
-    fontSize: 10, // 適切なフォントサイズに変更してください
-    // その他のスタイル
+    fontSize: 10,
   },
-  
 });
 
 export default TestPage;

@@ -93,8 +93,13 @@ const ReviewPage = () => {
   };
 
   const handleExplanation = () => {
-    const ruleIds = questions[questionIndex].ruleIds; // ルールIDを取得
-    navigation.navigate('RuleExplanation', { ruleIds });
+    const currentQuestion = questions.find(question => question.id === questionIdList[questionIndex]);
+    if (currentQuestion && currentQuestion.ruleIds) {
+      const ruleIds = currentQuestion.ruleIds; // ルールIDを取得
+      navigation.navigate('RuleExplanation', { ruleIds });
+    } else {
+      console.log('No ruleIds found for the current question');
+    }
   };
 
   const saveWrongAnsweredQuestion2 = async (questionId) => {
