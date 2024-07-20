@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Platform, Alert, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from './CustomButton';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
@@ -16,6 +16,9 @@ const adUnitId = Platform.select({
 });
 
 const StartPage = ({ navigation }) => {
+  const [currentVersion, setCurrentVersion] = useState('1.4.3'); // アプリの現在のバージョン
+  const [latestVersion, setLatestVersion] = useState('');
+
   useEffect(() => {
     const requestTrackingPermission = async () => {
       try {
@@ -27,8 +30,37 @@ const StartPage = ({ navigation }) => {
         console.error('Error requesting tracking permission:', error);
       }
     };
-    
+
+    const fetchVersion = async () => {
+      try {
+        const response = await fetch('https://inoue420.github.io/version/version.json');
+        const data = await response.json();
+        setLatestVersion(data.version);
+
+        // バージョンチェック
+        if (currentVersion !== data.version) {
+          Alert.alert(
+            'アップデート通知',
+            'アプリのアップデートが利用可能です。最新バージョンにアップデートしてください。',
+            [
+              {
+                text: 'アップデートする',
+                onPress: () => Linking.openURL('https://apps.apple.com/app/handball-rules/id6502761559'),
+              },
+              {
+                text: 'キャンセル',
+                style: 'cancel',
+              },
+            ]
+          );
+        }
+      } catch (error) {
+        console.error('Error fetching version:', error);
+      }
+    };
+
     requestTrackingPermission();
+    fetchVersion();
   }, []);
 
   const handleStudySessions = () => {
@@ -82,54 +114,47 @@ const StartPage = ({ navigation }) => {
       await AsyncStorage.removeItem('todayIds'); // 既存の todayIds を削除
   
       const ranges = [
-        { prefix: '1', start: 1, end: 1 },     // 1-1から1-1までの1問を選択
-        { prefix: '2', start: 2, end: 49 },    // 2-2から2-49までの2問を選択
-        { prefix: '3', start: 1, end: 4 },     // 3-1から3-4までの1問を選択
-        { prefix: '4', start: 1, end: 61 },    // 4-1から4-61までの1問を選択
-        { prefix: '5', start: 1, end: 13 },    // 5-1から5-13までの1問を選択
-        { prefix: '6', start: 1, end: 24 },    // 6-1から6-24までの1問を選択
-        { prefix: '7', start: 1, end: 34 },    // 7-1から7-34までの1問を選択
-        { prefix: '8', start: 1, end: 73 },    // 8-1から8-73までの1問を選択
-        { prefix: '9', start: 1, end: 9 },     // 9-1から9-9までの1問を選択
-        { prefix: '10', start: 1, end: 7 },    // 10-1から10-7までの1問を選択
-        { prefix: '11', start: 1, end: 6 },    // 11-1から11-6までの1問を選択
-        { prefix: '12', start: 1, end: 11 },   // 12-1から12-11までの1問を選択
-        { prefix: '13', start: 1, end: 15 },   // 13-1から13-15までの1問を選択
-        { prefix: '14', start: 1, end: 23 },   // 14-1から14-23までの1問を選択
-        { prefix: '15', start: 1, end: 25 },   // 15-1から15-25までの1問を選択
-        { prefix: '16', start: 1, end: 23 },   // 16-1から16-23までの2問を選択
-        { prefix: '17', start: 1, end: 9 },    // 17-1から17-9までの1問を選択
-        { prefix: '18', start: 1, end: 8 },    // 18-1から18-8までの1問を選択
-        { prefix: '19', start: 1, end: 2 },    // 19-1から19-2までの1問を選択
+        { prefix: '1', start: 1, end: 1 },
+        { prefix: '2', start: 2, end: 49 },
+        { prefix: '3', start: 1, end: 4 },
+        { prefix: '4', start: 1, end: 61 },
+        { prefix: '5', start: 1, end: 13 },
+        { prefix: '6', start: 1, end: 24 },
+        { prefix: '7', start: 1, end: 34 },
+        { prefix: '8', start: 1, end: 73 },
+        { prefix: '9', start: 1, end: 9 },
+        { prefix: '10', start: 1, end: 7 },
+        { prefix: '11', start: 1, end: 6 },
+        { prefix: '12', start: 1, end: 11 },
+        { prefix: '13', start: 1, end: 15 },
+        { prefix: '14', start: 1, end: 23 },
+        { prefix: '15', start: 1, end: 25 },
+        { prefix: '16', start: 1, end: 23 },
+        { prefix: '17', start: 1, end: 9 },
+        { prefix: '18', start: 1, end: 8 },
+        { prefix: '19', start: 1, end: 2 },
       ];
   
-      // ランダムに問題を選ぶ
       const selectedIds = await selectRandomQuestions(ranges, 4);
   
-      // 選択されたIDを保存する
       await AsyncStorage.setItem('todayIds', JSON.stringify(selectedIds));
       console.log('Today\'s randomIds:', selectedIds);
   
-      // 今日の問題ページにナビゲートする
       navigation.navigate('TodayQuestionsPage');
     } catch (error) {
       console.error('Error during generating today\'s questions:', error);
     }
   };
   
-  // ランダムに問題を選ぶ関数
   const selectRandomQuestions = async (ranges, numberOfQuestions) => {
     const selectedIds = [];
   
     while (selectedIds.length < numberOfQuestions) {
-      // 範囲からランダムに1つを選ぶ
       const range = ranges[Math.floor(Math.random() * ranges.length)];
       const { prefix, start, end } = range;
   
-      // ランダムに問題を選ぶ
       const randomId = `${prefix}-${Math.floor(Math.random() * (end - start + 1)) + start}`;
   
-      // 選択済みでないことを確認
       if (!selectedIds.includes(randomId)) {
         selectedIds.push(randomId);
       }
@@ -137,7 +162,6 @@ const StartPage = ({ navigation }) => {
   
     return selectedIds;
   };
-  
 
   return (
     <View style={styles.container}>
@@ -159,7 +183,7 @@ const StartPage = ({ navigation }) => {
       </View>
 
       <View style={styles.buttonContainer}>
-      <CustomButton
+        <CustomButton
           title="今日の4問(ランダム出題)"
           onPress={handleTodayQuestions}
         />
@@ -178,8 +202,6 @@ const StartPage = ({ navigation }) => {
           title="実力確認テストをする　25問"
           onPress={handleTest}
         />
-
-
       </View>
     </View>
   );
