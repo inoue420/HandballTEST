@@ -2,7 +2,7 @@
   "expo": {
     "name": "Handball Rules",
     "slug": "my-quiz-project",
-    "version": "1.4.3",
+    "version": "1.4.5",
     "orientation": "portrait",
     "icon": "./assets/handball Rules_icon3.png",
     "userInterfaceStyle": "light",
@@ -47,7 +47,7 @@
   },
   "react-native-google-mobile-ads": {
     "android_app_id": "ca-app-pub-4399954903316919~8218294300",
-    "ios_app_id": "ca-app-pub-4399954903316919~3284748003",
+    "ios_app_id": "ca-app-pub-4399954903316919~2165399531",
     "delay_app_measurement_init": true,
     "user_tracking_usage_description": "許可することで、より関連性の高い広告を表示することができるようになります。"
   },

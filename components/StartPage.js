@@ -7,7 +7,7 @@ import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 
 const adUnitIds = {
   android: 'ca-app-pub-4399954903316919/6717510377',
-  ios: 'ca-app-pub-4399954903316919/7557182852'
+  ios: 'ca-app-pub-4399954903316919/6289016370'
 };
 
 const adUnitId = Platform.select({
@@ -16,7 +16,7 @@ const adUnitId = Platform.select({
 });
 
 const StartPage = ({ navigation }) => {
-  const [currentVersion, setCurrentVersion] = useState('1.4.3'); // アプリの現在のバージョン
+  const [currentVersion, setCurrentVersion] = useState('1.4.5'); // アプリの現在のバージョン
   const [latestVersion, setLatestVersion] = useState('');
 
   useEffect(() => {

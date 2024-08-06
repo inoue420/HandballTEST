@@ -4,7 +4,7 @@ import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads'
 
 const adUnitIds = {
   android: 'ca-app-pub-4399954903316919/6717510377', // Android用の広告ユニットID
-  ios: 'ca-app-pub-4399954903316919/7557182852' // iOS用の広告ユニットID
+  ios: 'ca-app-pub-4399954903316919/6289016370' // iOS用の広告ユニットID
 };
 
 const adUnitId = Platform.select({
