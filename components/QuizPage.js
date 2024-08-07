@@ -9,7 +9,7 @@ import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads'
 
 const adUnitIds = {
   android: 'ca-app-pub-4399954903316919/6717510377',
-  ios: 'ca-app-pub-4399954903316919/9606510513',
+  ios: 'ca-app-pub-4399954903316919/6289016370',
 };
 
 const adUnitId = Platform.select({

@@ -1,6 +1,17 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import rules from './RuleDatas'; // RuleDatas.js から rules をインポート
+
+const adUnitIds = {
+  android: 'ca-app-pub-4399954903316919/6717510377',
+  ios: 'ca-app-pub-4399954903316919/6289016370',
+//  ios: 'ca-app-pub-3940256099942544/2934735716'  //testID
+};
+
+const adUnitId = Platform.select({
+  android: adUnitIds.android,
+  ios: adUnitIds.ios,
+});
 
 const RuleExplanation = ({ route }) => {
   const { ruleIds } = route.params;
@@ -18,6 +29,15 @@ const RuleExplanation = ({ route }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.banner}>
+        <BannerAd
+          unitId={adUnitId}
+          size={BannerAdSize.BANNER}
+          requestOptions={{
+            requestNonPersonalizedAdsOnly: true,
+          }}
+        />
+      </View>
       <View style={styles.headerContainer}>
         <Text style={styles.headerText}>関連する競技規則</Text>
       </View>
@@ -43,8 +63,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 10,
   },
+  banner: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   scrollView: {
-    paddingBottom: 20, // 下部に余白を追加
+    paddingBottom: 20,
   },
   headerContainer: {
     padding: 10,
@@ -62,7 +86,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   titleContainer: {
-    flexDirection: 'column', // Column direction to stack id and title vertically
+    flexDirection: 'column',
     alignItems: 'flex-start',
   },
   id: {

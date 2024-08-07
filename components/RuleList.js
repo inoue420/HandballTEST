@@ -1,6 +1,18 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Platform } from 'react-native';
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import rules from './RuleDatas'; // RuleDatas.js から rules をインポート
+
+const adUnitIds = {
+  android: 'ca-app-pub-4399954903316919/6717510377',
+  ios: 'ca-app-pub-4399954903316919/6289016370',
+//ios: 'ca-app-pub-3940256099942544/2934735716'  //testID
+};
+
+const adUnitId = Platform.select({
+  android: adUnitIds.android,
+  ios: adUnitIds.ios,
+});
 
 const RuleList = ({ navigation }) => {
   const [currentGroupId, setCurrentGroupId] = useState('1'); // 初期値は'1'のグループ
@@ -30,6 +42,15 @@ const RuleList = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.banner}>
+        <BannerAd
+          unitId={adUnitId}
+          size={BannerAdSize.BANNER}
+          requestOptions={{
+            requestNonPersonalizedAdsOnly: true,
+          }}
+        />
+      </View>
       <Text style={styles.header}>{filteredChapters[0]?.chapter}</Text>
       <FlatList
         ref={flatListRef}
@@ -67,6 +88,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
+  banner: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   header: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -88,7 +113,7 @@ const styles = StyleSheet.create({
   },
   id: {
     fontSize: 16,
-    marginRight: 4, // ここでスペースを調整
+    marginRight: 4,
   },
   title: {
     fontSize: 12,

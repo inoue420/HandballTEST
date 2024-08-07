@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Platform, Alert, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from './CustomButton';
@@ -7,7 +7,8 @@ import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 
 const adUnitIds = {
   android: 'ca-app-pub-4399954903316919/6717510377',
-  ios: 'ca-app-pub-4399954903316919/6289016370'
+  ios: 'ca-app-pub-4399954903316919/6289016370',
+//  ios: 'ca-app-pub-3940256099942544/2934735716'  //testID
 };
 
 const adUnitId = Platform.select({
@@ -16,51 +17,21 @@ const adUnitId = Platform.select({
 });
 
 const StartPage = ({ navigation }) => {
-  const [currentVersion, setCurrentVersion] = useState('1.4.5'); // アプリの現在のバージョン
-  const [latestVersion, setLatestVersion] = useState('');
-
   useEffect(() => {
-    const requestTrackingPermission = async () => {
+    const initializeApp = async () => {
       try {
         const { status } = await requestTrackingPermissionsAsync();
         if (status === 'granted') {
           console.log('User has granted permission for tracking data');
+        } else {
+          console.log('User has denied permission or tracking is disabled');
         }
       } catch (error) {
-        console.error('Error requesting tracking permission:', error);
+        console.error('Error initializing app:', error);
       }
     };
 
-    const fetchVersion = async () => {
-      try {
-        const response = await fetch('https://inoue420.github.io/version/version.json');
-        const data = await response.json();
-        setLatestVersion(data.version);
-
-        // バージョンチェック
-        if (currentVersion !== data.version) {
-          Alert.alert(
-            'アップデート通知',
-            'アプリのアップデートが利用可能です。最新バージョンにアップデートしてください。',
-            [
-              {
-                text: 'アップデートする',
-                onPress: () => Linking.openURL('https://apps.apple.com/app/handball-rules/id6502761559'),
-              },
-              {
-                text: 'キャンセル',
-                style: 'cancel',
-              },
-            ]
-          );
-        }
-      } catch (error) {
-        console.error('Error fetching version:', error);
-      }
-    };
-
-    requestTrackingPermission();
-    fetchVersion();
+    initializeApp();
   }, []);
 
   const handleStudySessions = () => {
@@ -105,14 +76,14 @@ const StartPage = ({ navigation }) => {
     } catch (error) {
       console.error('Error during test:', error);
     }
-   
+
     navigation.navigate('Test');
   };
 
   const handleTodayQuestions = async () => {
     try {
       await AsyncStorage.removeItem('todayIds'); // 既存の todayIds を削除
-  
+
       const ranges = [
         { prefix: '1', start: 1, end: 1 },
         { prefix: '2', start: 2, end: 49 },
@@ -134,32 +105,32 @@ const StartPage = ({ navigation }) => {
         { prefix: '18', start: 1, end: 8 },
         { prefix: '19', start: 1, end: 2 },
       ];
-  
+
       const selectedIds = await selectRandomQuestions(ranges, 4);
-  
+
       await AsyncStorage.setItem('todayIds', JSON.stringify(selectedIds));
       console.log('Today\'s randomIds:', selectedIds);
-  
+
       navigation.navigate('TodayQuestionsPage');
     } catch (error) {
       console.error('Error during generating today\'s questions:', error);
     }
   };
-  
+
   const selectRandomQuestions = async (ranges, numberOfQuestions) => {
     const selectedIds = [];
-  
+
     while (selectedIds.length < numberOfQuestions) {
       const range = ranges[Math.floor(Math.random() * ranges.length)];
       const { prefix, start, end } = range;
-  
+
       const randomId = `${prefix}-${Math.floor(Math.random() * (end - start + 1)) + start}`;
-  
+
       if (!selectedIds.includes(randomId)) {
         selectedIds.push(randomId);
       }
     }
-  
+
     return selectedIds;
   };
 

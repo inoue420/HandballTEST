@@ -9,7 +9,7 @@ import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 
 const adUnitIds = {
   android: 'ca-app-pub-4399954903316919/6717510377', // Android用の広告ユニットID
-  ios: 'ca-app-pub-4399954903316919/9606510513' // iOS用の広告ユニットID
+  ios: 'ca-app-pub-4399954903316919/6289016370' // iOS用の広告ユニットID
 };
 
 const adUnitId = Platform.select({
