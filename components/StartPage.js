@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Platform, AppState, Modal, Button } from 'react-native';
+import { View, Text, StyleSheet, Platform, Modal, Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from './CustomButton';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
@@ -7,8 +7,8 @@ import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 
 const adUnitIds = {
   android: 'ca-app-pub-4399954903316919/6717510377',
-  ios: 'ca-app-pub-3940256099942544/2934735716'  //testID
-  //ios: 'ca-app-pub-4399954903316919/6289016370' // iOS用の広告ユニットID
+//  ios: 'ca-app-pub-3940256099942544/2934735716'  //testID
+  ios: 'ca-app-pub-4399954903316919/6289016370' // iOS用の広告ユニットID
 
 };
 
@@ -18,9 +18,7 @@ const adUnitId = Platform.select({
 });
 
 const StartPage = ({ navigation }) => {
-  const [appState, setAppState] = useState(AppState.currentState);
   const [modalVisible, setModalVisible] = useState(false); // トラッキング許可のモーダルの表示状態
-  const [hasRequestedTracking, setHasRequestedTracking] = useState(false); // トラッキング許可がリクエストされたかどうか
 
   useEffect(() => {
     const checkFirstLaunch = async () => {
@@ -30,8 +28,6 @@ const StartPage = ({ navigation }) => {
           // 初回起動時
           await AsyncStorage.setItem('isFirstLaunch', 'false');
           setModalVisible(true);
-
-
         }
       } catch (error) {
         console.error('Error checking first launch:', error);
@@ -39,22 +35,7 @@ const StartPage = ({ navigation }) => {
     };
 
     checkFirstLaunch();
-
-    const handleAppStateChange = (nextAppState) => {
-      if (appState.match(/inactive|background/) && nextAppState === 'active') {
-        if (!hasRequestedTracking) {
-          requestTrackingPermission();
-        }
-      }
-      setAppState(nextAppState);
-    };
-
-    const appStateListener = AppState.addEventListener('change', handleAppStateChange);
-
-    return () => {
-      appStateListener.remove();
-    };
-  }, [appState, hasRequestedTracking]);
+  }, []);
 
   const requestTrackingPermission = async () => {
     try {
@@ -64,7 +45,6 @@ const StartPage = ({ navigation }) => {
       } else {
         console.log('User has denied permission or tracking is disabled');
       }
-      setHasRequestedTracking(true); // トラッキング許可をリクエストしたことを記録
     } catch (error) {
       console.error('Error requesting tracking permission:', error);
     }
@@ -77,6 +57,7 @@ const StartPage = ({ navigation }) => {
 
   const handleDeny = () => {
     setModalVisible(false);
+    requestTrackingPermission(); // 許可をリクエスト
   };
 
   const handleStudySessions = () => {
@@ -231,8 +212,7 @@ const StartPage = ({ navigation }) => {
           <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>トラッキングの許可について {'\n'}Regarding Tracking Permission </Text> 
           <Text>広告表示にのみ使用されます。許可しなくても機能制限はありません {'\n'}This is used only for displaying ads. There are no functional limitations if you do not allow it.</Text>
-            <Button title="許可しない (Don't Allow)" onPress={handleAllow} />
-            <Button title="許可する (Allow)" onPress={handleDeny} />
+            <Button title="理解した I understand" onPress={handleDeny} />
           </View>
         </View>
       </Modal>
