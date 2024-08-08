@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Platform, Alert, Linking } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Platform, AppState, Modal, Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from './CustomButton';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
@@ -7,8 +7,9 @@ import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 
 const adUnitIds = {
   android: 'ca-app-pub-4399954903316919/6717510377',
-  ios: 'ca-app-pub-4399954903316919/6289016370',
-//  ios: 'ca-app-pub-3940256099942544/2934735716'  //testID
+  ios: 'ca-app-pub-3940256099942544/2934735716'  //testID
+  //ios: 'ca-app-pub-4399954903316919/6289016370' // iOS用の広告ユニットID
+
 };
 
 const adUnitId = Platform.select({
@@ -17,22 +18,66 @@ const adUnitId = Platform.select({
 });
 
 const StartPage = ({ navigation }) => {
+  const [appState, setAppState] = useState(AppState.currentState);
+  const [modalVisible, setModalVisible] = useState(false); // トラッキング許可のモーダルの表示状態
+  const [hasRequestedTracking, setHasRequestedTracking] = useState(false); // トラッキング許可がリクエストされたかどうか
+
   useEffect(() => {
-    const initializeApp = async () => {
+    const checkFirstLaunch = async () => {
       try {
-        const { status } = await requestTrackingPermissionsAsync();
-        if (status === 'granted') {
-          console.log('User has granted permission for tracking data');
-        } else {
-          console.log('User has denied permission or tracking is disabled');
+        const isFirstLaunch = await AsyncStorage.getItem('isFirstLaunch');
+        if (isFirstLaunch === null) {
+          // 初回起動時
+          await AsyncStorage.setItem('isFirstLaunch', 'false');
+          setModalVisible(true);
+
+
         }
       } catch (error) {
-        console.error('Error initializing app:', error);
+        console.error('Error checking first launch:', error);
       }
     };
 
-    initializeApp();
-  }, []);
+    checkFirstLaunch();
+
+    const handleAppStateChange = (nextAppState) => {
+      if (appState.match(/inactive|background/) && nextAppState === 'active') {
+        if (!hasRequestedTracking) {
+          requestTrackingPermission();
+        }
+      }
+      setAppState(nextAppState);
+    };
+
+    const appStateListener = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      appStateListener.remove();
+    };
+  }, [appState, hasRequestedTracking]);
+
+  const requestTrackingPermission = async () => {
+    try {
+      const { status } = await requestTrackingPermissionsAsync();
+      if (status === 'granted') {
+        console.log('User has granted permission for tracking data');
+      } else {
+        console.log('User has denied permission or tracking is disabled');
+      }
+      setHasRequestedTracking(true); // トラッキング許可をリクエストしたことを記録
+    } catch (error) {
+      console.error('Error requesting tracking permission:', error);
+    }
+  };
+
+  const handleAllow = () => {
+    setModalVisible(false);
+    requestTrackingPermission(); // 許可をリクエスト
+  };
+
+  const handleDeny = () => {
+    setModalVisible(false);
+  };
 
   const handleStudySessions = () => {
     navigation.navigate('StudySessions');
@@ -174,6 +219,23 @@ const StartPage = ({ navigation }) => {
           onPress={handleTest}
         />
       </View>
+
+      {/* トラッキング許可のモーダル */}
+      <Modal
+        transparent={true}
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>トラッキングの許可について {'\n'}Regarding Tracking Permission </Text> 
+          <Text>広告表示にのみ使用されます。許可しなくても機能制限はありません {'\n'}This is used only for displaying ads. There are no functional limitations if you do not allow it.</Text>
+            <Button title="許可しない (Don't Allow)" onPress={handleAllow} />
+            <Button title="許可する (Allow)" onPress={handleDeny} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -228,6 +290,25 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: 'center',
     marginTop: 50,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20, // フォントサイズを変更
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: 'blue',
   },
 });
 
