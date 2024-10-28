@@ -7,15 +7,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 
-const adUnitIds = {
-  android: 'ca-app-pub-4399954903316919/6717510377',
-  ios: 'ca-app-pub-4399954903316919/6289016370',
-};
-
-const adUnitId = Platform.select({
-  android: adUnitIds.android,
-  ios: adUnitIds.ios,
-});
+const banneradUnitId = __DEV__
+  ? TestIds.BANNER
+  : Platform.select({
+      android: 'ca-app-pub-4399954903316919/6717510377',  // Android本番用ID
+      ios: 'ca-app-pub-4399954903316919/6289016370',      // iOS本番用ID
+    });
 
 const QuizPage = ({ route }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -96,7 +93,7 @@ const QuizPage = ({ route }) => {
     <View style={styles.container}>
       <View style={styles.banner}>
         <BannerAd
-          unitId={adUnitId}
+          unitId={banneradUnitId}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
           requestOptions={{
             networkExtras: {

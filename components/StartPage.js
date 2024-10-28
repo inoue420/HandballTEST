@@ -1,25 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Platform, Modal, Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import CustomButton from './CustomButton';
-import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import CustomButton from './CustomButton';0
+import { BannerAd, BannerAdSize, InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 
-const adUnitIds = {
-  android: 'ca-app-pub-4399954903316919/6717510377',
-//  ios: 'ca-app-pub-3940256099942544/2934735716'  //testID
-  ios: 'ca-app-pub-4399954903316919/6289016370' // iOS用の広告ユニットID
+//インタースティシャル重複防止でbanneradunitidと変更
+const banneradUnitId = __DEV__
+  ? TestIds.BANNER
+  : Platform.select({
+      android: 'ca-app-pub-4399954903316919/6717510377',  // Android本番用ID
+      ios: 'ca-app-pub-4399954903316919/6289016370',      // iOS本番用ID
+    });
 
-};
+//インタースティシャルID
+const intadUnitId = __DEV__
+  ? TestIds.INTERSTITIAL
+  : Platform.select({
+      android: 'ca-app-pub-3940256099942544/1033173712',  // Androidの広告ID
+      ios: 'ca-app-pub-4399954903316919/4148801099',      // iOSの広告ID
+    });
 
-const adUnitId = Platform.select({
-  android: adUnitIds.android,
-  ios: adUnitIds.ios,
+// インタースティシャル広告の作成
+const interstitial = InterstitialAd.createForAdRequest(intadUnitId, {
+  keywords: ['fashion', 'clothing'],
 });
+
 
 const StartPage = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false); // トラッキング許可のモーダルの表示状態
-
+//インタスティシャル用const  
+const [loaded, setLoaded] = useState(false);
+  
   useEffect(() => {
     const checkFirstLaunch = async () => {
       try {
@@ -49,6 +61,34 @@ const StartPage = ({ navigation }) => {
       console.error('Error requesting tracking permission:', error);
     }
   };
+
+//インタースティシャル動作
+useEffect(() => {
+  // 広告が表示されたときにリセットするリスナー
+  const dismissListener = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+    setLoaded(false);       // 広告が閉じられたのでロード状態をリセット
+    interstitial.load();     // 次の広告を読み込む
+  });
+
+  // 広告が読み込まれたらボタンを有効にするリスナー
+  const loadListener = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+    setLoaded(true);         // 広告が準備完了したらロード状態を更新
+  });
+
+  // 初回にインタースティシャル広告を読み込み開始
+  interstitial.load();
+
+  // コンポーネントがアンマウントされたときにリスナーを解除
+  return () => {
+    dismissListener();
+    loadListener();
+  };
+}, []);
+
+// 広告がロードされるまでボタンを表示しない
+if (!loaded) {
+  return null;
+}
 
   const handleAllow = () => {
     setModalVisible(false);
@@ -107,6 +147,16 @@ const StartPage = ({ navigation }) => {
   };
 
   const handleTodayQuestions = async () => {
+//インタースティシャル
+    if (loaded) {
+      interstitial.show();
+      setLoaded(false); // 一度表示したので false にリセット
+
+      // インタースティシャルが表示された後に再度読み込み
+      interstitial.load(); 
+
+    }
+
     try {
       await AsyncStorage.removeItem('todayIds'); // 既存の todayIds を削除
 
@@ -164,7 +214,7 @@ const StartPage = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.banner}>
         <BannerAd
-          unitId={adUnitId}
+          unitId={banneradUnitId}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
           requestOptions={{
             networkExtras: {

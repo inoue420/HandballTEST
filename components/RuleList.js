@@ -1,18 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Platform } from 'react-native';
-import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import rules from './RuleDatas'; // RuleDatas.js から rules をインポート
 
-const adUnitIds = {
-  android: 'ca-app-pub-4399954903316919/6717510377',
-  ios: 'ca-app-pub-4399954903316919/6289016370',
-//ios: 'ca-app-pub-3940256099942544/2934735716'  //testID
-};
-
-const adUnitId = Platform.select({
-  android: adUnitIds.android,
-  ios: adUnitIds.ios,
-});
+const banneradUnitId = __DEV__
+  ? TestIds.BANNER
+  : Platform.select({
+      android: 'ca-app-pub-4399954903316919/6717510377',  // Android本番用ID
+      ios: 'ca-app-pub-4399954903316919/6289016370',      // iOS本番用ID
+    });
 
 const RuleList = ({ navigation }) => {
   const [currentGroupId, setCurrentGroupId] = useState('1'); // 初期値は'1'のグループ
@@ -44,7 +40,7 @@ const RuleList = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.banner}>
         <BannerAd
-          unitId={adUnitId}
+          unitId={banneradUnitId}
           size={BannerAdSize.BANNER}
           requestOptions={{
             requestNonPersonalizedAdsOnly: true,

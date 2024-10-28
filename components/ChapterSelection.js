@@ -2,15 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Button, KeyboardAvoidingView, Platform } from 'react-native';
 import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
 
-const adUnitIds = {
-  android: 'ca-app-pub-4399954903316919/6717510377', // Android用の広告ユニットID
-  ios: 'ca-app-pub-4399954903316919/6289016370' // iOS用の広告ユニットID
-};
-
-const adUnitId = Platform.select({
-  android: adUnitIds.android,
-  ios: adUnitIds.ios,
-});
+const banneradUnitId = __DEV__
+  ? TestIds.BANNER
+  : Platform.select({
+      android: 'ca-app-pub-4399954903316919/6717510377',  // Android本番用ID
+      ios: 'ca-app-pub-4399954903316919/6289016370',      // iOS本番用ID
+    });
 
 const ChapterSelection = ({ navigation }) => {
   const [directInputValue1, setDirectInputValue1] = useState('');
@@ -30,7 +27,7 @@ const ChapterSelection = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.banner}>
         <BannerAd
-          unitId={adUnitId}
+          unitId={banneradUnitId}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
           requestOptions={{
             networkExtras: {
