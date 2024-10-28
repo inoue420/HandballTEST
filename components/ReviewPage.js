@@ -79,14 +79,19 @@ const ReviewPage = () => {
     const currentQuestion = questions.find(question => question.id === questionIdList[questionIndex]);
     const correctAnswers = currentQuestion.correctAnswers;
     const isCorrect = selectedAnswers.every(answer => correctAnswers.includes(answer)) && selectedAnswers.length === correctAnswers.length;
-
+    // 全ての選択肢が正解かチェック
+    
     setIsCorrect(isCorrect);
     setAnswered(true);
 
-    if (!isCorrect) {
+    if (isCorrect) {
+      const currentQuestionId = questionIdList[questionIndex];
+      await saveSolvedQuestion(currentQuestionId); // 正解の場合にIDを保存
+    } else {
       const currentQuestionId = questionIdList[questionIndex];
       await saveWrongAnsweredQuestion2(currentQuestionId);
-    }
+
+    } 
   };
 
   const handleExplanation = () => {
@@ -98,6 +103,31 @@ const ReviewPage = () => {
       console.log('No ruleIds found for the current question');
     }
   };
+
+// 正解した問題を保存する関数
+const saveSolvedQuestion = async (questionId) => {
+  try {
+    let solvedQuestions = await AsyncStorage.getItem('solvedQuestions');
+    if (solvedQuestions === null) {
+      solvedQuestions = [];
+    } else {
+      solvedQuestions = JSON.parse(solvedQuestions);
+    }
+
+    // 重複を防ぐためにIDが既に存在するか確認
+    if (!solvedQuestions.includes(questionId)) {
+      solvedQuestions.push(questionId);
+    }
+
+    await AsyncStorage.setItem('solvedQuestions', JSON.stringify(solvedQuestions));
+    console.log('Solved question ID saved:', questionId);
+  } catch (error) {
+    console.error('Error saving solved question:', error);
+  }
+};
+
+
+
 
   const saveWrongAnsweredQuestion2 = async (questionId) => {
     try {
@@ -112,6 +142,7 @@ const ReviewPage = () => {
       // インデックスが見つかった場合のみセット
       if (questionIdIndex !== -1) {
         wrongAnsweredQuestions2.push(questionIdList[questionIdIndex]);
+
       }
       console.log('Wrong question ID to be saved:', questionId);
       console.log('Data to be saved:', JSON.stringify(wrongAnsweredQuestions2));

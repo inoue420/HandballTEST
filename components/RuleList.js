@@ -10,7 +10,7 @@ const banneradUnitId = __DEV__
       ios: 'ca-app-pub-4399954903316919/6289016370',      // iOS本番用ID
     });
 
-const RuleList = ({ navigation }) => {
+const RuleList = ({ }) => {
   const [currentGroupId, setCurrentGroupId] = useState('1'); // 初期値は'1'のグループ
   const flatListRef = useRef(null); // FlatListの参照を取得するためのuseRef
 

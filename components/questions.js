@@ -410,9 +410,18 @@ const questions = [
   },
 */
 
-
 ];
 
+const calculateChapterCounts = () => {
+  const chapterCounts = {};
+  questions.forEach(question => {
+    const chapter = question.id.split('-')[0]; // IDを分割して章を取得
+    chapterCounts[chapter] = (chapterCounts[chapter] || 0) + 1; // 章ごとのカウントを集計
+  });
+  return chapterCounts;
+};
 
-
+// デフォルトエクスポートを使用
 export default questions;
+// calculateChapterCountsを個別にエクスポート
+export { calculateChapterCounts };

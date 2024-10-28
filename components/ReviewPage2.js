@@ -84,6 +84,13 @@ const ReviewPage = () => {
     setIsCorrect(isCorrect);
     setAnswered(true);
   
+    if (isCorrect) {
+      const currentQuestionId = questionIdList[questionIndex];
+      await saveSolvedQuestion(currentQuestionId); // 正解の場合にIDを保存
+    } else {
+
+    } 
+
   };
   
   const handleExplanation = () => {
@@ -96,6 +103,29 @@ const ReviewPage = () => {
     }
   };
   
+// 正解した問題を保存する関数
+const saveSolvedQuestion = async (questionId) => {
+  try {
+    let solvedQuestions = await AsyncStorage.getItem('solvedQuestions');
+    if (solvedQuestions === null) {
+      solvedQuestions = [];
+    } else {
+      solvedQuestions = JSON.parse(solvedQuestions);
+    }
+
+    // 重複を防ぐためにIDが既に存在するか確認
+    if (!solvedQuestions.includes(questionId)) {
+      solvedQuestions.push(questionId);
+    }
+
+    await AsyncStorage.setItem('solvedQuestions', JSON.stringify(solvedQuestions));
+    console.log('Solved question ID saved:', questionId);
+  } catch (error) {
+    console.error('Error saving solved question:', error);
+  }
+};
+
+
   return (
     <View style={styles.mainContainer}>
       <View style={styles.banner}>

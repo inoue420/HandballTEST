@@ -23,6 +23,8 @@ const TestPage = () => {
   const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
   const [correctSelectionCount, setCorrectSelectionCount] = useState(0);
   const [wrongSelectionCount, setWrongSelectionCount] = useState(0);
+  const [solvedQuestionAll, setsolvedQuestionAll] = useState([]); // 状態を追加
+  const [wrongAnsweredQuestionAll, setWrongAnsweredQuestionAll] = useState([]); // 状態を追加
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -54,8 +56,9 @@ const TestPage = () => {
   }, []);
 
   const handleNextQuestion = () => {
-    if (questionIndex < questionIdList.length - 1) {
-      setQuestionIndex(questionIndex + 1);
+
+    if (questionIndex < questionIdList.length + 1) {
+      setQuestionIndex(questionIndex + 1);     
       setSelectedAnswers([]);
       setAnswered(false);
       setIsCorrect(false);
@@ -81,6 +84,7 @@ const TestPage = () => {
 
     setIsCorrect(isCorrect);
     setAnswered(true);
+    const currentQuestionId = questionIdList[questionIndex]; // 現在の質問IDを取得
 
     if (isCorrect || !isCorrect) { // 回答が正解であるかどうかに関わらず、正答数を加算
       setCorrectAnswersCount(correctAnswersCount + correctAnswers.length);
@@ -98,7 +102,93 @@ const TestPage = () => {
 
     setCorrectSelectionCount(correctSelectionCount + correctSelections);
     setWrongSelectionCount(wrongSelectionCount + wrongSelections);
+ 
+    // 正解の場合
+    if (isCorrect) {
+      setsolvedQuestionAll(prev => {
+        const updatedsolvedQuestions = [...prev, currentQuestionId]; // 解いた問題を状態に追加
+        return updatedsolvedQuestions; // 状態を更新
+      });
+  
+      await savesolvedQuestion(currentQuestionId); // AsyncStorageにも保存
+  
+    } else {
+
+      // ユーザーが消せる間違えた問題を保存
+      setWrongAnsweredQuestionAll(prev => [...prev, currentQuestionId]); // 間違った問題を状態に追加
+      await saveWrongAnsweredQuestion(currentQuestionId); // AsyncStorageにも保存
+  
+      // 消せない間違えた問題を保存
+      await saveWrongAnsweredQuestionAll(currentQuestionId); // AsyncStorageにも保存
+    }
+
   };
+
+// 正解の問題を保存する関数
+const savesolvedQuestion = async (currentQuestionId) => {
+  try {
+    let solvedQuestions = await AsyncStorage.getItem('solvedQuestions');
+    if (solvedQuestions === null) {
+      solvedQuestions = [];
+    } else {
+      solvedQuestions = JSON.parse(solvedQuestions);
+    }
+
+    solvedQuestions.push(currentQuestionId);
+    await AsyncStorage.setItem('solvedQuestions', JSON.stringify(solvedQuestions));
+
+    console.log('After adding solved question:', solvedQuestions); // 追加後の状態を表示
+  } catch (error) {
+    console.error('Error saving solved question:', error);
+  }
+};
+
+// ユーザーが消せる間違えた問題を保存する関数
+const saveWrongAnsweredQuestion = async (currentQuestionId) => {
+  try {
+    let wrongAnsweredQuestions = await AsyncStorage.getItem('wrongAnsweredQuestions');
+    if (wrongAnsweredQuestions === null) {
+      wrongAnsweredQuestions = [];
+    } else {
+      wrongAnsweredQuestions = JSON.parse(wrongAnsweredQuestions);
+    }
+
+    console.log('Before adding wrong answered question:', wrongAnsweredQuestions); // 追加前の状態を表示
+    wrongAnsweredQuestions.push(currentQuestionId);
+    await AsyncStorage.setItem('wrongAnsweredQuestions', JSON.stringify(wrongAnsweredQuestions));
+
+    console.log('After adding wrong answered question:', wrongAnsweredQuestions); // 追加後の状態を表示
+  } catch (error) {
+    console.error('Error saving wrong answered question:', error);
+  }
+};
+
+// 消せない間違えた問題を保存する関数
+const saveWrongAnsweredQuestionAll = async (currentQuestionId) => {
+  try {
+    let wrongAnsweredQuestionAll = await AsyncStorage.getItem('wrongAnsweredQuestionAll');
+    if (wrongAnsweredQuestionAll === null) {
+      wrongAnsweredQuestionAll = [];
+    } else {
+      wrongAnsweredQuestionAll = JSON.parse(wrongAnsweredQuestionAll);
+    }
+
+    // 重複を避けるため、すでに存在しない場合のみ追加
+    if (!wrongAnsweredQuestionAll.includes(currentQuestionId)) {
+      wrongAnsweredQuestionAll.push(currentQuestionId);
+      await AsyncStorage.setItem('wrongAnsweredQuestionAll', JSON.stringify(wrongAnsweredQuestionAll));
+
+      console.log('After adding wrong answered question all:', wrongAnsweredQuestionAll); // 追加後の状態を表示
+    } else {
+      console.log('Question ID already exists in wrong answered question all:', currentQuestionId); // 重複した場合のメッセージ
+    }
+  } catch (error) {
+    console.error('Error saving wrong answered question all:', error);
+  }
+};
+
+
+
 
   return (
     <View style={styles.container}>
@@ -115,13 +205,21 @@ const TestPage = () => {
       </View>
       <ScrollView contentContainerStyle={styles.scrollViewContainer}>
         <View style={styles.container}>
-          <View style={styles.questionContainer}>
+{/*           <View style={styles.questionContainer}>
             <Text>
               {questionIdList.length > 0
                 ? questions.find(question => question.id === questionIdList[questionIndex]).question
                 : 'Loading...'}
             </Text>
+          </View> */}
+          <View style={styles.questionContainer}>
+             <Text>
+             {questionIdList.length > 0 && questionIndex < questionIdList.length
+               ? questions.find(question => question.id === questionIdList[questionIndex])?.question || 'Question not found'
+              : 'Loading...'}
+             </Text>
           </View>
+
           <View style={styles.optionsContainer}>
             {questionIdList.length > 0 && (
               questions.find(question => question.id === questionIdList[questionIndex]).options.map((option, index) => (

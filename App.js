@@ -14,6 +14,7 @@ import RuleList from './components/RuleList';
 import RuleExplanation from './components/RuleExplanation'
 import StudySessions from './components/StudySessions';
 import TodayQuestionsPage from './components/TodayQuestionsPage';
+import StudyHistoryPage from './components/SutudyHistoryPage';
 
 const Stack = createStackNavigator();
 
@@ -33,6 +34,7 @@ const App = () => {
         <Stack.Screen name="RuleExplanation" component={RuleExplanation} />
         <Stack.Screen name="StudySessions" component={StudySessions} />
         <Stack.Screen name="TodayQuestionsPage" component={TodayQuestionsPage} />
+        <Stack.Screen name="StudyHistory" component={StudyHistoryPage} />
 
        </Stack.Navigator>
     </NavigationContainer>

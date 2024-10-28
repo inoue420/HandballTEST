@@ -23,6 +23,11 @@ const StudySessions = ({ navigation }) => {
     navigation.navigate('History');
   };
 
+  // 学習履歴を確認ボタンが押されたときの処理
+  const handleStudyHistory = () => {
+    navigation.navigate('StudyHistory');
+  };
+
   return (
     <View style={styles.container}>
       <CustomButton
@@ -43,6 +48,11 @@ const StudySessions = ({ navigation }) => {
       <CustomButton
         title="誤答履歴を確認"
         onPress={handleAnswerHistory}
+      />
+
+      <CustomButton
+        title="学習履歴を確認"
+        onPress={handleStudyHistory} // 新しいボタンの処理
       />
     </View>
   );
