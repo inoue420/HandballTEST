@@ -5,18 +5,14 @@ import questions from './questions'; // 問題データのインポート
 import ChoiceButton from './ChoiceButton'; // 選択肢ボタンのインポート
 import AnswerButton from './AnswerButton'; // 回答ボタンのインポート
 import { useNavigation } from '@react-navigation/native';
-import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 
-const adUnitIds = {
-  android: 'ca-app-pub-4399954903316919/6717510377', // Android用の広告ユニットID
-  ios: 'ca-app-pub-3940256099942544/2934735716'  //testID
-//  ios: 'ca-app-pub-4399954903316919/6289016370' // iOS用の広告ユニットID
-};
-
-const adUnitId = Platform.select({
-  android: adUnitIds.android,
-  ios: adUnitIds.ios,
-});
+const banneradUnitId = __DEV__
+  ? TestIds.BANNER
+  : Platform.select({
+      android: 'ca-app-pub-4399954903316919/6717510377',  // Android本番用ID
+      ios: 'ca-app-pub-4399954903316919/6289016370',      // iOS本番用ID
+    });
 
 const TodayQuestionsPage = () => {
   const [questionIndex, setQuestionIndex] = useState(0); // 問題のインデックス
@@ -108,7 +104,7 @@ const TodayQuestionsPage = () => {
     <View style={styles.mainContainer}>
       <View style={styles.banner}>
         <BannerAd
-          unitId={adUnitId}
+          unitId={banneradUnitId}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
           requestOptions={{
             networkExtras: {
