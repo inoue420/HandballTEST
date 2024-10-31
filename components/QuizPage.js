@@ -6,6 +6,7 @@ import AnswerButton from './AnswerButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+import { useRank } from './RankContext';
 
 const banneradUnitId = __DEV__
   ? TestIds.BANNER
@@ -22,6 +23,9 @@ const QuizPage = ({ route }) => {
   const [solvedQuestionAll, setSolvedQuestionAll] = useState([]); // 状態を追加
   const [wrongAnsweredQuestionAll, setWrongAnsweredQuestionAll] = useState([]); // 状態を追加
   const navigation = useNavigation();
+  const { fetchStudyData } = useRank(); //RankContextからfetchの読み込み
+  const [bannerRefreshKey, setBannerRefreshKey] = useState(0);
+
 
   useEffect(() => {
     if (route.params && route.params.selectedId) {
@@ -31,6 +35,12 @@ const QuizPage = ({ route }) => {
         setCurrentQuestionIndex(index);
       }
     }
+
+    const interval = setInterval(() => {
+      setBannerRefreshKey((prevKey) => prevKey + 1);
+    }, 15000); // 15秒ごとにバナーをリセット
+        return () => clearInterval(interval); // クリーンアップ
+  
   }, [route.params.selectedId]);
 
   const handleAnswer = (selectedAnswer) => {
@@ -83,11 +93,14 @@ const QuizPage = ({ route }) => {
     if (currentQuestionIndex === questions.length - 1) {
       console.log('End of quiz');
       navigation.navigate('End');
+            fetchStudyData(); // Nextボタンが押された時にデータを更新
+
     } else {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswers([]);
       setAnswered(false);
       setIsCorrect(null);
+      fetchStudyData(); // Nextボタンが押された時にデータを更新
     }
   };
 
@@ -115,17 +128,17 @@ const QuizPage = ({ route }) => {
 // 正解の問題を保存する関数
 const saveSolvedQuestion = async (questionId) => {
   try {
-    let SolvedQuestions = await AsyncStorage.getItem('SolvedQuestions');
-    if (SolvedQuestions === null) {
-      SolvedQuestions = [];
+    let solvedQuestions = await AsyncStorage.getItem('solvedQuestions');
+    if (solvedQuestions === null) {
+      solvedQuestions = [];
     } else {
-      SolvedQuestions = JSON.parse(SolvedQuestions);
+      solvedQuestions = JSON.parse(solvedQuestions);
     }
 
-    SolvedQuestions.push(questionId);
-    await AsyncStorage.setItem('SolvedQuestions', JSON.stringify(SolvedQuestions));
+    solvedQuestions.push(questionId);
+    await AsyncStorage.setItem('solvedQuestions', JSON.stringify(solvedQuestions));
 
-    console.log('After adding solved question:', SolvedQuestions); // 追加後の状態を表示
+    console.log('After adding solved question:', solvedQuestions); // 追加後の状態を表示
   } catch (error) {
     console.error('Error saving solved question:', error);
   }
@@ -182,6 +195,7 @@ const saveWrongAnsweredQuestionAll = async (questionId) => {
     <View style={styles.container}>
       <View style={styles.banner}>
         <BannerAd
+          key={bannerRefreshKey} // リフレッシュのためのキーを追加
           unitId={banneradUnitId}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
           requestOptions={{

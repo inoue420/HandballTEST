@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { questions, calculateChapterCounts } from './questions';
+import { useRank } from './RankContext';
 
 const StudyHistoryPage = () => {
   const [correctCountsByChapter, setCorrectCountsByChapter] = useState({});
@@ -11,12 +12,16 @@ const StudyHistoryPage = () => {
   const [totalSolvedCount, setTotalSolvedCount] = useState(0);
   const [totalIncorrectCount, setTotalIncorrectCount] = useState(0);
   const [totalAttemptedCount, setTotalAttemptedCount] = useState(0);
+  const { resetGlobalTotalAttemptedCount } = useRank(); // RankContextからリセット関数を取得
   const [expandedSections, setExpandedSections] = useState({
     correct: false,
     incorrect: false,
     attempted: false,
   });
 
+// RankContextからsetTotalAttemptedCountを取得
+/*  const { setGlobalTotalAttemptedCount } = useRank();  */
+  
   useEffect(() => {
     setChapterCounts(calculateChapterCounts());
 
@@ -35,6 +40,7 @@ const StudyHistoryPage = () => {
         // 取り組んだ問題のIDを取得（重複を排除）
         const uniqueAttemptedQuestions = [...new Set([...uniqueSolvedQuestions, ...uniqueWrongAnsweredQuestions])];
         setTotalAttemptedCount(uniqueAttemptedQuestions.length);
+/*         setGlobalTotalAttemptedCount(uniqueAttemptedQuestions.length); // RankContextに保存 */
 
         // 章ごとの集計
         const correctCounts = {};
@@ -74,6 +80,27 @@ const StudyHistoryPage = () => {
       [section]: !prevSections[section],
     }));
   };
+
+  // 履歴を除去する関数
+  const clearHistory = async () => {
+    try {
+      await AsyncStorage.removeItem('solvedQuestions');
+      await AsyncStorage.removeItem('wrongAnsweredQuestions');
+      resetGlobalTotalAttemptedCount(); // グローバルの取り組んだ問題数をリセット
+
+      setTotalSolvedCount(0);
+      setTotalIncorrectCount(0);
+      setTotalAttemptedCount(0);
+      setCorrectCountsByChapter({});
+      setIncorrectCountsByChapter({});
+      setAttemptedCountsByChapter({});
+      console.log('履歴が削除されました');
+    } catch (error) {
+      console.error('Error clearing history:', error);
+    }
+  };
+
+
 
   return (
     <View style={styles.container}>
@@ -126,6 +153,11 @@ const StudyHistoryPage = () => {
           ))}
         </ScrollView>
       )}
+
+            {/* 履歴除去ボタン */}
+{/*             <View style={styles.clearButtonContainer}>
+        <Button title="履歴を除去" onPress={clearHistory} color="#FF6347" />
+      </View> */}
     </View>
   );
 };

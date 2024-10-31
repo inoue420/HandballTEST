@@ -4,6 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomButton from './CustomButton';0
 import { BannerAd, BannerAdSize, InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
+import { useRank } from './RankContext';
+import RankUpModal from './RankUpModal'
+
 
 //インタースティシャル重複防止でbanneradunitidと変更
 const banneradUnitId = __DEV__
@@ -29,6 +32,18 @@ const interstitial = InterstitialAd.createForAdRequest(intadUnitId, {
 
 const StartPage = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false); // トラッキング許可のモーダルの表示状態
+  const [bannerRefreshKey, setBannerRefreshKey] = useState(0);
+
+  //ランクアップ判定用
+  const {
+    globalTotalAttemptedCount,
+    setGlobalTotalAttemptedCount,
+    increaseRank,
+    rank,
+  } = useRank();
+
+
+  
 //インタスティシャル用const  
 const [loaded, setLoaded] = useState(false);
   
@@ -47,6 +62,12 @@ const [loaded, setLoaded] = useState(false);
     };
 
     checkFirstLaunch();
+
+    const interval = setInterval(() => {
+      setBannerRefreshKey((prevKey) => prevKey + 1);
+    }, 15000); // 15秒ごとにバナーをリセット
+        return () => clearInterval(interval); // クリーンアップ
+
   }, []);
 
   const requestTrackingPermission = async () => {
@@ -210,10 +231,12 @@ if (!loaded) {
     return selectedIds;
   };
 
+
   return (
     <View style={styles.container}>
       <View style={styles.banner}>
         <BannerAd
+          key={bannerRefreshKey} // リフレッシュのためのキーを追加        
           unitId={banneradUnitId}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
           requestOptions={{
@@ -228,6 +251,20 @@ if (!loaded) {
         <Text style={[styles.title, { textAlign: 'center' }]}>Handball Rules</Text>
         <Text style={[styles.title, { fontSize: 25, textAlign: 'center' }]}>～2min study～</Text>
       </View>
+
+
+      <View style={styles.rcontainer}>
+         <Text style={styles.rankLabel}> 現在あなたのランクは</Text>
+
+      <View style={styles.rankContainer}>
+        <Text style={styles.rankText} adjustsFontSizeToFit numberOfLines={1}>
+          {rank}
+        </Text>
+      </View>
+      <Text style={styles.rankLabel2}> 問題にたくさん正解すればランクアップ！</Text>
+
+      
+    </View>
 
       <View style={styles.buttonContainer}>
         <CustomButton
@@ -250,6 +287,14 @@ if (!loaded) {
           onPress={handleTest}
         />
       </View>
+
+      <View>
+{/*       <Button 
+  title="変数・ランク確認" 
+  onPress={() => console.log('StartPageコンポーネントでの試行回数:',globalTotalAttemptedCount, currentRank)}
+/> */}
+
+    </View>
 
       {/* トラッキング許可のモーダル */}
       <Modal
@@ -310,7 +355,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   titleBox: {
-    marginBottom: 40,
+    marginBottom: 3,
   },
   title: {
     fontSize: 40,
@@ -340,6 +385,43 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: 'blue',
   },
+
+  rcontainer: {
+    alignItems: 'left',
+    marginTop: 15,
+    padding: 10,
+  },
+
+  rankLabel: {
+    fontSize: 14,
+    marginBottom: 1,
+    marginRight: 0, // Tooltipとの距離を調整
+  },   
+    rankLabel2: {
+      fontSize: 9,
+      textAlign: 'right', // 右寄せ
+      marginTop: 5,
+ 
+  },
+  rankContainer: {
+    backgroundColor: '#E0FFFF', // LightCyan
+    padding: 10,
+    marginTop: 0, // ランク表示とラベルの間のスペースを狭める（例：4に変更）
+/*     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#87CEEB', // SkyBlue for a subtle border */
+    width: '100%',
+    alignItems: 'center',
+  },
+  rankText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+
+
+
+
 });
 
 export default StartPage;

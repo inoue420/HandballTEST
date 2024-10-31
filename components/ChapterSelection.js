@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, Button, KeyboardAvoidingView, Platform } from 'react-native';
 import { BannerAd, BannerAdSize, TestIds,} from 'react-native-google-mobile-ads';
 
@@ -12,6 +12,7 @@ const banneradUnitId = __DEV__
 const ChapterSelection = ({ navigation }) => {
   const [directInputValue1, setDirectInputValue1] = useState('');
   const [directInputValue2, setDirectInputValue2] = useState('');
+  const [bannerRefreshKey, setBannerRefreshKey] = useState(0);
 
   const handleStartChapter = () => {
     let chapterId = `${directInputValue1}-${directInputValue2}`;
@@ -23,10 +24,19 @@ const ChapterSelection = ({ navigation }) => {
     navigation.navigate('Quiz', { selectedId: chapterId });
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBannerRefreshKey((prevKey) => prevKey + 1);
+    }, 15000); // 15秒ごとにバナーをリセット
+        return () => clearInterval(interval); // クリーンアップ
+  
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.banner}>
         <BannerAd
+          key={bannerRefreshKey} // リフレッシュのためのキーを追加        
           unitId={banneradUnitId}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
           requestOptions={{

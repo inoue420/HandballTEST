@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import rules from './RuleDatas'; // RuleDatas.js から rules をインポート
 
@@ -11,6 +12,17 @@ const banneradUnitId = __DEV__
 
 const RuleExplanation = ({ route }) => {
   const { ruleIds } = route.params;
+  const [bannerRefreshKey, setBannerRefreshKey] = useState(0);
+
+  useEffect(() => {
+
+    const interval = setInterval(() => {
+      setBannerRefreshKey((prevKey) => prevKey + 1);
+    }, 15000); // 15秒ごとにバナーをリセット
+        return () => clearInterval(interval); // クリーンアップ
+  
+  }, []);
+
 
   // 複数のルールIDに基づいて対応するルールを取得
   const matchedRules = rules.filter(rule => ruleIds.includes(rule.id));
@@ -27,6 +39,7 @@ const RuleExplanation = ({ route }) => {
     <View style={styles.container}>
       <View style={styles.banner}>
         <BannerAd
+          key={bannerRefreshKey} // リフレッシュのためのキーを追加
           unitId={banneradUnitId}
           size={BannerAdSize.BANNER}
           requestOptions={{

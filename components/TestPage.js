@@ -6,6 +6,8 @@ import ChoiceButton from './ChoiceButton';
 import AnswerButton from './AnswerButton';
 import { useNavigation } from '@react-navigation/native';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+import { useRank } from './RankContext';
+
 
 const banneradUnitId = __DEV__
   ? TestIds.BANNER
@@ -26,6 +28,8 @@ const TestPage = () => {
   const [solvedQuestionAll, setsolvedQuestionAll] = useState([]); // 状態を追加
   const [wrongAnsweredQuestionAll, setWrongAnsweredQuestionAll] = useState([]); // 状態を追加
   const navigation = useNavigation();
+  const { fetchStudyData } = useRank(); //RankContextからfetchの読み込み
+  const [bannerRefreshKey, setBannerRefreshKey] = useState(0);
 
   useEffect(() => {
     const loadStoredData = async () => {
@@ -53,6 +57,13 @@ const TestPage = () => {
       }
     };
     loadStoredData();
+
+    const interval = setInterval(() => {
+      setBannerRefreshKey((prevKey) => prevKey + 1);
+    }, 15000); // 15秒ごとにバナーをリセット
+        return () => clearInterval(interval); // クリーンアップ
+  
+
   }, []);
 
   const handleNextQuestion = () => {
@@ -62,9 +73,13 @@ const TestPage = () => {
       setSelectedAnswers([]);
       setAnswered(false);
       setIsCorrect(false);
+      fetchStudyData(); // Nextボタンが押された時にデータを更新
+
     } else {
       console.log('End of question list');
       navigation.navigate('End');
+      fetchStudyData(); // Nextボタンが押された時にデータを更新
+
     }
   };
 
@@ -194,6 +209,7 @@ const saveWrongAnsweredQuestionAll = async (currentQuestionId) => {
     <View style={styles.container}>
       <View style={styles.banner}>
         <BannerAd
+          key={bannerRefreshKey} // リフレッシュのためのキーを追加
           unitId={banneradUnitId}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
           requestOptions={{

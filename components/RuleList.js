@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Platform } from 'react-native';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import rules from './RuleDatas'; // RuleDatas.js から rules をインポート
@@ -13,6 +13,7 @@ const banneradUnitId = __DEV__
 const RuleList = ({ }) => {
   const [currentGroupId, setCurrentGroupId] = useState('1'); // 初期値は'1'のグループ
   const flatListRef = useRef(null); // FlatListの参照を取得するためのuseRef
+  const [bannerRefreshKey, setBannerRefreshKey] = useState(0);
 
   // 条のフィルタリング
   const filteredChapters = rules.filter(rule => rule.chapter.startsWith(`第 ${currentGroupId} 条`));
@@ -27,6 +28,15 @@ const RuleList = ({ }) => {
     </View>
   );
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBannerRefreshKey((prevKey) => prevKey + 1);
+    }, 15000); // 15秒ごとにバナーをリセット
+        return () => clearInterval(interval); // クリーンアップ
+  
+  }, []);
+
+
   const maxGroupId = Math.max(...rules.map(rule => parseInt(rule.chapter.match(/\d+/)[0])));
 
   const handlePress = (newGroupId) => {
@@ -40,6 +50,7 @@ const RuleList = ({ }) => {
     <View style={styles.container}>
       <View style={styles.banner}>
         <BannerAd
+          key={bannerRefreshKey} // リフレッシュのためのキーを追加
           unitId={banneradUnitId}
           size={BannerAdSize.BANNER}
           requestOptions={{
