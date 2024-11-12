@@ -55,10 +55,11 @@ const ReviewPage = () => {
     };
     loadStoredData();
 
-    const interval = setInterval(() => {
+    //バナーリセットの除去
+/*     const interval = setInterval(() => {
       setBannerRefreshKey((prevKey) => prevKey + 1);
     }, 15000); // 15秒ごとにバナーをリセット
-        return () => clearInterval(interval); // クリーンアップ
+        return () => clearInterval(interval); // クリーンアップ */
 
   }, []);
 

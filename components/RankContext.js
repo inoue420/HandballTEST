@@ -41,7 +41,7 @@ export const RankProvider = ({ children }) => {
 
   ];
 
-  const updateRank = (attemptedCount) => {
+  const updateRank = async (attemptedCount) => {
     const currentRankIndex = ranks.findIndex(r => r.name === rank);
     if (currentRankIndex >= ranks.length - 1) return;
 
@@ -50,6 +50,11 @@ export const RankProvider = ({ children }) => {
      setPreviousRank(rank); // Update previousRank before changing the rank      
       setRank(nextRank.name);
       setRankModalVisible(true);
+
+      // AsyncStorageにランクとカウントを保存
+      await AsyncStorage.setItem('currentRank', nextRank.name);
+      await AsyncStorage.setItem('totalAttemptedCount', JSON.stringify(attemptedCount));
+
     }
   };
 
@@ -58,7 +63,6 @@ export const RankProvider = ({ children }) => {
     try {
       const solvedQuestions = await AsyncStorage.getItem('solvedQuestions');
       const wrongAnsweredQuestions = await AsyncStorage.getItem('wrongAnsweredQuestions');
-
       const uniqueSolvedQuestions = solvedQuestions ? [...new Set(JSON.parse(solvedQuestions))] : [];
       const uniqueWrongAnsweredQuestions = wrongAnsweredQuestions ? [...new Set(JSON.parse(wrongAnsweredQuestions))] : [];　//間違えた数　今は使わないがいつかは。。
 
@@ -71,8 +75,25 @@ export const RankProvider = ({ children }) => {
     }
   };
 
+
+  // アプリ起動時にランクとカウントを復元
   useEffect(() => {
-    fetchStudyData();
+    const initializeData = async () => {
+      const savedRank = await AsyncStorage.getItem('currentRank');
+      const savedAttemptedCount = await AsyncStorage.getItem('totalAttemptedCount');
+      
+      if (savedRank) {
+        setRank(savedRank);
+      }
+      
+      if (savedAttemptedCount) {
+        setGlobalTotalAttemptedCount(JSON.parse(savedAttemptedCount));
+      } else {
+        await fetchStudyData();
+      }
+    };
+
+    initializeData();
   }, []);
 
   useEffect(() => {
