@@ -235,8 +235,9 @@ const saveWrongAnsweredQuestionAll = async (questionId) => {
               {!isCorrect && (
                 <TouchableOpacity style={styles.explanationButton} onPress={handleExplanation}>
                   <Text style={styles.explanationButtonText}>解説を見る</Text>
-                </TouchableOpacity>
+                </TouchableOpacity>        
               )}
+              <View style={{ height: 150 }} />
             </View>
           )}
         </View>

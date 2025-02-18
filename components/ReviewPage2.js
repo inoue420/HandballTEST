@@ -192,6 +192,7 @@ const saveSolvedQuestion = async (questionId) => {
                   <Text style={styles.explanationButtonText}>解説を見る</Text>
                 </TouchableOpacity>
               )}
+              <View style={{ height: 150 }} />
             </View>
           )}
         </View>

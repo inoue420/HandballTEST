@@ -209,11 +209,13 @@ const saveSolvedQuestion = async (questionId) => {
           {answered && (          
           <View style={styles.nextButtonContainer}>
             <AnswerButton title="Next" onPress={handleNextQuestion} />
-            {!isCorrect && (
-              <TouchableOpacity style={styles.explanationButton} onPress={handleExplanation}>
-                <Text style={styles.explanationButtonText}>解説を見る</Text>
-              </TouchableOpacity>
+              {!isCorrect && (
+                <TouchableOpacity style={styles.explanationButton} onPress={handleExplanation}>
+                  <Text style={styles.explanationButtonText}>解説を見る</Text>
+                </TouchableOpacity>
+                
             )}
+            <View style={{ height: 100 }} />            
           </View>
           )}
         </View>

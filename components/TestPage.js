@@ -1,20 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import questions from './questions';
 import ChoiceButton from './ChoiceButton';
 import AnswerButton from './AnswerButton';
 import { useNavigation } from '@react-navigation/native';
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+import { BannerAd, BannerAdSize, InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 import { useRank } from './RankContext';
 
-
+// バナー広告用ID
 const banneradUnitId = __DEV__
   ? TestIds.BANNER
   : Platform.select({
       android: 'ca-app-pub-4399954903316919/6717510377',  // Android本番用ID
       ios: 'ca-app-pub-4399954903316919/6289016370',      // iOS本番用ID
     });
+
+// インタースティシャル広告用ID
+const intadUnitId = __DEV__
+  ? TestIds.INTERSTITIAL
+  : Platform.select({
+      android: 'ca-app-pub-3940256099942544/1033173712',  // Androidの広告ID（例）
+      ios: 'ca-app-pub-4399954903316919/4148801099',       // iOSの広告ID（例）
+    });
+
+// インタースティシャル広告のインスタンス作成
+const interstitial = InterstitialAd.createForAdRequest(intadUnitId, {
+  keywords: ['test'],
+});
 
 const TestPage = () => {
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -25,11 +38,35 @@ const TestPage = () => {
   const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
   const [correctSelectionCount, setCorrectSelectionCount] = useState(0);
   const [wrongSelectionCount, setWrongSelectionCount] = useState(0);
-  const [solvedQuestionAll, setsolvedQuestionAll] = useState([]); // 状態を追加
-  const [wrongAnsweredQuestionAll, setWrongAnsweredQuestionAll] = useState([]); // 状態を追加
+  const [solvedQuestionAll, setsolvedQuestionAll] = useState([]); 
+  const [wrongAnsweredQuestionAll, setWrongAnsweredQuestionAll] = useState([]); 
   const navigation = useNavigation();
-  const { fetchStudyData } = useRank(); //RankContextからfetchの読み込み
+  const { fetchStudyData } = useRank();
   const [bannerRefreshKey, setBannerRefreshKey] = useState(0);
+  const [isInterstitialLoaded, setIsInterstitialLoaded] = useState(false);
+  const pendingNextQuestionRef = useRef(null);
+
+  // インタースティシャル広告のリスナー設定
+  useEffect(() => {
+    const loadListener = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+      setIsInterstitialLoaded(true);
+    });
+    const dismissListener = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+      setIsInterstitialLoaded(false);
+      // 広告終了後、もし次の問題進行が保留されていれば実行する
+      if (pendingNextQuestionRef.current) {
+        pendingNextQuestionRef.current();
+        pendingNextQuestionRef.current = null;
+      }
+      interstitial.load(); // 次回用に再度読み込む
+    });
+    // 初回の読み込み
+    interstitial.load();
+    return () => {
+      loadListener();
+      dismissListener();
+    };
+  }, []);
 
   useEffect(() => {
     const loadStoredData = async () => {
@@ -47,7 +84,6 @@ const TestPage = () => {
               return aParts[1] - bParts[1];
             }
           });
-
           setQuestionIdList(sortedIds);
         } else {
           console.log('No stored data or empty data in AsyncStorage');
@@ -57,31 +93,38 @@ const TestPage = () => {
       }
     };
     loadStoredData();
-
-    //バナーリセットの除去
-/*     const interval = setInterval(() => {
-      setBannerRefreshKey((prevKey) => prevKey + 1);
-    }, 15000); // 15秒ごとにバナーをリセット
-        return () => clearInterval(interval); // クリーンアップ */
-  
-
   }, []);
 
-  const handleNextQuestion = () => {
-
-    if (questionIndex < questionIdList.length + 1) {
-      setQuestionIndex(questionIndex + 1);     
+  // 次の問題へ進む共通処理
+  const proceedToNextQuestion = () => {
+    if (questionIndex < questionIdList.length - 1) {
+      setQuestionIndex(prev => prev + 1);
       setSelectedAnswers([]);
       setAnswered(false);
       setIsCorrect(false);
-      fetchStudyData(); // Nextボタンが押された時にデータを更新
-
+      fetchStudyData();
     } else {
-      console.log('End of question list');
+      fetchStudyData();
       navigation.navigate('End');
-      fetchStudyData(); // Nextボタンが押された時にデータを更新
-
     }
+  };
+
+  // 「Next」ボタン押下時の処理（広告表示の有無を判断）
+  const handleNextQuestion = () => {
+    // 現在の問題番号（1-indexed）
+    const currentQuestionNumber = questionIndex + 1;
+    // 広告表示する問題番号のリスト
+    const adTriggerQuestions = [5, 10, 15, 20];
+    if (adTriggerQuestions.includes(currentQuestionNumber)) {
+      if (isInterstitialLoaded) {
+        // 広告終了後に次の問題に進むよう、コールバックを保留
+        pendingNextQuestionRef.current = proceedToNextQuestion;
+        interstitial.show();
+        return;
+      }
+    }
+    // 広告表示が不要な場合、または広告が未読込の場合はそのまま進む
+    proceedToNextQuestion();
   };
 
   const handleAnswer = (selectedOption) => {
@@ -96,15 +139,14 @@ const TestPage = () => {
 
   const handleAnswerButtonClick = async () => {
     const correctAnswers = questions.find(question => question.id === questionIdList[questionIndex]).correctAnswers;
-    const isCorrect = selectedAnswers.every(answer => correctAnswers.includes(answer)) && selectedAnswers.length === correctAnswers.length;
+    const isAnswerCorrect = selectedAnswers.every(answer => correctAnswers.includes(answer)) && selectedAnswers.length === correctAnswers.length;
 
-    setIsCorrect(isCorrect);
+    setIsCorrect(isAnswerCorrect);
     setAnswered(true);
-    const currentQuestionId = questionIdList[questionIndex]; // 現在の質問IDを取得
+    const currentQuestionId = questionIdList[questionIndex];
 
-    if (isCorrect || !isCorrect) { // 回答が正解であるかどうかに関わらず、正答数を加算
-      setCorrectAnswersCount(correctAnswersCount + correctAnswers.length);
-    }
+    // 正誤に関わらず正答数（＝問題ごとの正解数）を加算
+    setCorrectAnswersCount(prev => prev + correctAnswers.length);
 
     let correctSelections = 0;
     let wrongSelections = 0;
@@ -115,139 +157,95 @@ const TestPage = () => {
         wrongSelections++;
       }
     });
+    setCorrectSelectionCount(prev => prev + correctSelections);
+    setWrongSelectionCount(prev => prev + wrongSelections);
 
-    setCorrectSelectionCount(correctSelectionCount + correctSelections);
-    setWrongSelectionCount(wrongSelectionCount + wrongSelections);
- 
-    // 正解の場合
-    if (isCorrect) {
-      setsolvedQuestionAll(prev => {
-        const updatedsolvedQuestions = [...prev, currentQuestionId]; // 解いた問題を状態に追加
-        return updatedsolvedQuestions; // 状態を更新
-      });
-  
-      await savesolvedQuestion(currentQuestionId); // AsyncStorageにも保存
-  
+    if (isAnswerCorrect) {
+      setsolvedQuestionAll(prev => [...prev, currentQuestionId]);
+      await savesolvedQuestion(currentQuestionId);
     } else {
-
-      // ユーザーが消せる間違えた問題を保存
-      setWrongAnsweredQuestionAll(prev => [...prev, currentQuestionId]); // 間違った問題を状態に追加
-      await saveWrongAnsweredQuestion(currentQuestionId); // AsyncStorageにも保存
-  
-      // 消せない間違えた問題を保存
-      await saveWrongAnsweredQuestionAll(currentQuestionId); // AsyncStorageにも保存
+      setWrongAnsweredQuestionAll(prev => [...prev, currentQuestionId]);
+      await saveWrongAnsweredQuestion(currentQuestionId);
+      await saveWrongAnsweredQuestionAll(currentQuestionId);
     }
-
   };
 
-// 正解の問題を保存する関数
-const savesolvedQuestion = async (currentQuestionId) => {
-  try {
-    let solvedQuestions = await AsyncStorage.getItem('solvedQuestions');
-    if (solvedQuestions === null) {
-      solvedQuestions = [];
-    } else {
-      solvedQuestions = JSON.parse(solvedQuestions);
+  // 正解問題保存用関数
+  const savesolvedQuestion = async (currentQuestionId) => {
+    try {
+      let solvedQuestions = await AsyncStorage.getItem('solvedQuestions');
+      solvedQuestions = solvedQuestions ? JSON.parse(solvedQuestions) : [];
+      solvedQuestions.push(currentQuestionId);
+      await AsyncStorage.setItem('solvedQuestions', JSON.stringify(solvedQuestions));
+      console.log('After adding solved question:', solvedQuestions);
+    } catch (error) {
+      console.error('Error saving solved question:', error);
     }
+  };
 
-    solvedQuestions.push(currentQuestionId);
-    await AsyncStorage.setItem('solvedQuestions', JSON.stringify(solvedQuestions));
-
-    console.log('After adding solved question:', solvedQuestions); // 追加後の状態を表示
-  } catch (error) {
-    console.error('Error saving solved question:', error);
-  }
-};
-
-// ユーザーが消せる間違えた問題を保存する関数
-const saveWrongAnsweredQuestion = async (currentQuestionId) => {
-  try {
-    let wrongAnsweredQuestions = await AsyncStorage.getItem('wrongAnsweredQuestions');
-    if (wrongAnsweredQuestions === null) {
-      wrongAnsweredQuestions = [];
-    } else {
-      wrongAnsweredQuestions = JSON.parse(wrongAnsweredQuestions);
+  // ユーザーが消せる間違えた問題保存用関数
+  const saveWrongAnsweredQuestion = async (currentQuestionId) => {
+    try {
+      let wrongAnsweredQuestions = await AsyncStorage.getItem('wrongAnsweredQuestions');
+      wrongAnsweredQuestions = wrongAnsweredQuestions ? JSON.parse(wrongAnsweredQuestions) : [];
+      console.log('Before adding wrong answered question:', wrongAnsweredQuestions);
+      wrongAnsweredQuestions.push(currentQuestionId);
+      await AsyncStorage.setItem('wrongAnsweredQuestions', JSON.stringify(wrongAnsweredQuestions));
+      console.log('After adding wrong answered question:', wrongAnsweredQuestions);
+    } catch (error) {
+      console.error('Error saving wrong answered question:', error);
     }
+  };
 
-    console.log('Before adding wrong answered question:', wrongAnsweredQuestions); // 追加前の状態を表示
-    wrongAnsweredQuestions.push(currentQuestionId);
-    await AsyncStorage.setItem('wrongAnsweredQuestions', JSON.stringify(wrongAnsweredQuestions));
-
-    console.log('After adding wrong answered question:', wrongAnsweredQuestions); // 追加後の状態を表示
-  } catch (error) {
-    console.error('Error saving wrong answered question:', error);
-  }
-};
-
-// 消せない間違えた問題を保存する関数
-const saveWrongAnsweredQuestionAll = async (currentQuestionId) => {
-  try {
-    let wrongAnsweredQuestionAll = await AsyncStorage.getItem('wrongAnsweredQuestionAll');
-    if (wrongAnsweredQuestionAll === null) {
-      wrongAnsweredQuestionAll = [];
-    } else {
-      wrongAnsweredQuestionAll = JSON.parse(wrongAnsweredQuestionAll);
+  // 消せない間違えた問題保存用関数
+  const saveWrongAnsweredQuestionAll = async (currentQuestionId) => {
+    try {
+      let wrongAnsweredQuestionAll = await AsyncStorage.getItem('wrongAnsweredQuestionAll');
+      wrongAnsweredQuestionAll = wrongAnsweredQuestionAll ? JSON.parse(wrongAnsweredQuestionAll) : [];
+      if (!wrongAnsweredQuestionAll.includes(currentQuestionId)) {
+        wrongAnsweredQuestionAll.push(currentQuestionId);
+        await AsyncStorage.setItem('wrongAnsweredQuestionAll', JSON.stringify(wrongAnsweredQuestionAll));
+        console.log('After adding wrong answered question all:', wrongAnsweredQuestionAll);
+      } else {
+        console.log('Question ID already exists in wrong answered question all:', currentQuestionId);
+      }
+    } catch (error) {
+      console.error('Error saving wrong answered question all:', error);
     }
-
-    // 重複を避けるため、すでに存在しない場合のみ追加
-    if (!wrongAnsweredQuestionAll.includes(currentQuestionId)) {
-      wrongAnsweredQuestionAll.push(currentQuestionId);
-      await AsyncStorage.setItem('wrongAnsweredQuestionAll', JSON.stringify(wrongAnsweredQuestionAll));
-
-      console.log('After adding wrong answered question all:', wrongAnsweredQuestionAll); // 追加後の状態を表示
-    } else {
-      console.log('Question ID already exists in wrong answered question all:', currentQuestionId); // 重複した場合のメッセージ
-    }
-  } catch (error) {
-    console.error('Error saving wrong answered question all:', error);
-  }
-};
-
-
-
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.banner}>
         <BannerAd
-          key={bannerRefreshKey} // リフレッシュのためのキーを追加
+          key={bannerRefreshKey}
           unitId={banneradUnitId}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-          requestOptions={{
-            networkExtras: {
-              collapsible: 'bottom',
-            },
-          }}
+          requestOptions={{ networkExtras: { collapsible: 'bottom' } }}
         />
       </View>
       <ScrollView contentContainerStyle={styles.scrollViewContainer}>
         <View style={styles.container}>
-{/*           <View style={styles.questionContainer}>
+          <View style={styles.questionContainer}>
             <Text>
-              {questionIdList.length > 0
-                ? questions.find(question => question.id === questionIdList[questionIndex]).question
+              {questionIdList.length > 0 && questionIndex < questionIdList.length
+                ? questions.find(question => question.id === questionIdList[questionIndex])?.question || 'Question not found'
                 : 'Loading...'}
             </Text>
-          </View> */}
-          <View style={styles.questionContainer}>
-             <Text>
-             {questionIdList.length > 0 && questionIndex < questionIdList.length
-               ? questions.find(question => question.id === questionIdList[questionIndex])?.question || 'Question not found'
-              : 'Loading...'}
-             </Text>
           </View>
-
           <View style={styles.optionsContainer}>
             {questionIdList.length > 0 && (
-              questions.find(question => question.id === questionIdList[questionIndex]).options.map((option, index) => (
-                <ChoiceButton
-                  key={index}
-                  label={`${String.fromCharCode(97 + index)}) ${option}`}
-                  onPress={() => handleAnswer(option)}
-                  selected={selectedAnswers.includes(option)}
-                  disabled={answered}
-                />
-              ))
+              questions
+                .find(question => question.id === questionIdList[questionIndex])
+                .options.map((option, index) => (
+                  <ChoiceButton
+                    key={index}
+                    label={`${String.fromCharCode(97 + index)}) ${option}`}
+                    onPress={() => handleAnswer(option)}
+                    selected={selectedAnswers.includes(option)}
+                    disabled={answered}
+                  />
+                ))
             )}
           </View>
           <View style={styles.answerButtonContainer}>
@@ -264,13 +262,13 @@ const saveWrongAnsweredQuestionAll = async (currentQuestionId) => {
           )}
           <View style={styles.countContainer}>
             <Text style={styles.scoreRateText}>
-              スコア率: {correctAnswersCount === 0 ? 0 : ((correctSelectionCount - wrongSelectionCount) / correctAnswersCount * 100).toFixed(0)}%
+              スコア率: {correctAnswersCount === 0 ? 0 : (((correctSelectionCount - wrongSelectionCount) / correctAnswersCount) * 100).toFixed(0)}%
               <Text style={styles.borderText}>  (A級85％, B級80％, C級60％がボーダー)</Text>
             </Text>
             <Text style={styles.countText}>正答数: {correctAnswersCount}</Text>
             <Text style={styles.countText}>正答選択数: {correctSelectionCount}</Text>
             <Text style={styles.countText}>誤答選択数: {wrongSelectionCount}</Text>
-            <Text style={styles.countText}>問題番号: {questionIndex + 1}/25</Text>
+            <Text style={styles.countText}>問題番号: {questionIndex + 1}/{questionIdList.length}</Text>
           </View>
         </View>
       </ScrollView>
@@ -285,7 +283,7 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white', // バナーの背景色を調整
+    backgroundColor: 'white',
   },
   scrollViewContainer: {
     flexGrow: 1,
@@ -294,7 +292,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 40, // バナーの高さ分の余白を追加
+    paddingTop: 40,
   },
   questionContainer: {
     marginBottom: 20,
@@ -316,7 +314,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   resultText: {
-    fontSize: 5 * 16,
+    fontSize: 80,
   },
   scoreRateText: {
     fontSize: 18,
