@@ -199,10 +199,12 @@ const saveSolvedQuestion = async (questionId) => {
             ))}
           </View>
           <View style={styles.answerButtonContainer}>
-            <AnswerButton title="回答する" onPress={handleAnswerButtonClick} disabled={!selectedAnswers.length || answered} />
+            <AnswerButton title="回答する" onPress={handleAnswerButtonClick} />
+            <View style={{ height: 20 }} />
           </View>
           {answered && (
             <View style={styles.resultContainer}>
+            <View style={{ marginTop: -15 }} />              
               <Text style={styles.resultText}>{isCorrect ? '〇' : '×'}</Text>
             </View>
           )}
