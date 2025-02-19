@@ -10,13 +10,27 @@ const banneradUnitId = __DEV__
       ios: 'ca-app-pub-4399954903316919/6289016370',      // iOS本番用ID
     });
 
+// グループ定義
+const groups = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','競技規則解釈','交代地域規定','競技規則運用に関するガイドライン','チームタイムアウト電子申請システム規定'];
+
 const RuleList = ({ }) => {
   const [currentGroupId, setCurrentGroupId] = useState('1'); // 初期値は'1'のグループ
   const flatListRef = useRef(null); // FlatListの参照を取得するためのuseRef
   const [bannerRefreshKey, setBannerRefreshKey] = useState(0);
 
+
   // 条のフィルタリング
-  const filteredChapters = rules.filter(rule => rule.chapter.startsWith(`第 ${currentGroupId} 条`));
+  const filteredChapters = rules.filter(rule => {
+    if (!rule.chapter || typeof rule.chapter !== 'string') return false;
+    // currentGroupIdが数値の場合（例："1","2",...）は "第 {currentGroupId} 条" で判定、
+    // それ以外（例："ガイドライン"）は完全一致とする
+    if (!isNaN(parseInt(currentGroupId))) {
+      return rule.chapter.startsWith(`第 ${currentGroupId} 条`);
+    }
+    return rule.chapter === currentGroupId;
+  });
+  
+    
 
   const renderItem = ({ item }) => (
     <View style={styles.item}>
@@ -37,15 +51,20 @@ const RuleList = ({ }) => {
   
   }, []);
 
+  const numericChapters = rules.filter(rule => rule.chapter && rule.chapter.startsWith('第 '));
+  const maxGroupId = Math.max(...numericChapters.map(rule => parseInt(rule.chapter.match(/\d+/)[0])));
+  
+// 現在のグループインデックスを計算
+const currentIndex = groups.indexOf(currentGroupId);
 
-  const maxGroupId = Math.max(...rules.map(rule => parseInt(rule.chapter.match(/\d+/)[0])));
+// 次・前のグループへ移動する handlePress の変更
+const handlePress = (newGroupId) => {
+  setCurrentGroupId(newGroupId);
+  if (flatListRef.current) {
+    flatListRef.current.scrollToOffset({ animated: true, offset: 0 });
+  }
+};
 
-  const handlePress = (newGroupId) => {
-    setCurrentGroupId(newGroupId.toString());
-    if (flatListRef.current) {
-      flatListRef.current.scrollToOffset({ animated: true, offset: 0 }); // 一番上にスクロール
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -67,24 +86,25 @@ const RuleList = ({ }) => {
         keyExtractor={(item) => item.id}
         style={styles.list}
       />
-      <View style={styles.buttonContainer}>
-        {parseInt(currentGroupId) > 1 && (
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => handlePress(parseInt(currentGroupId) - 1)}
-          >
-            <Text>前の条を表示</Text>
-          </TouchableOpacity>
-        )}
-        {parseInt(currentGroupId) < maxGroupId && (
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => handlePress(parseInt(currentGroupId) + 1)}
-          >
-            <Text>次の条を表示</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+        <View style={styles.buttonContainer}>
+          {currentIndex > 0 && (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => handlePress(groups[currentIndex - 1])}
+            >
+              <Text>前の条を表示</Text>
+            </TouchableOpacity>
+          )}
+          {currentIndex < groups.length - 1 && (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => handlePress(groups[currentIndex + 1])}
+            >
+              <Text>次の条を表示</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
     </View>
   );
 };

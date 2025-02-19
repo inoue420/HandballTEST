@@ -24,10 +24,21 @@ const RuleExplanation = ({ route }) => {
   
   }, []);
 
+  const normalizeId = (str) => {
+    if (!str) return '';
+    return str
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '')      // 空白を除去
+      .replace(/[:：]/g, '#');   // コロン（全角・半角）を'#'に置換
+  };
+  
 
   // 複数のルールIDに基づいて対応するルールを取得
-  const matchedRules = rules.filter(rule => ruleIds.includes(rule.id));
-
+  const matchedRules = rules.filter(rule =>
+    ruleIds.some(query => normalizeId(rule.id) === normalizeId(query))
+  );
+  
   if (matchedRules.length === 0) {
     return (
       <View style={styles.container}>
