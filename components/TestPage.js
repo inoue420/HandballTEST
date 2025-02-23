@@ -12,22 +12,17 @@ import { useRank } from './RankContext';
 const banneradUnitId = __DEV__
   ? TestIds.BANNER
   : Platform.select({
-      android: 'ca-app-pub-4399954903316919/6717510377',  // Android本番用ID
-      ios: 'ca-app-pub-4399954903316919/6289016370',      // iOS本番用ID
+      android: 'ca-app-pub-4399954903316919/6717510377', // Android本番用ID
+      ios: 'ca-app-pub-4399954903316919/6289016370',     // iOS本番用ID
     });
 
 // インタースティシャル広告用ID
 const intadUnitId = __DEV__
   ? TestIds.INTERSTITIAL
   : Platform.select({
-      android: 'ca-app-pub-3940256099942544/1033173712',  // Androidの広告ID（例）
-      ios: 'ca-app-pub-4399954903316919/4148801099',       // iOSの広告ID（例）
+      android: 'ca-app-pub-3940256099942544/1033173712', // Androidの広告ID（例）
+      ios: 'ca-app-pub-4399954903316919/4148801099',      // iOSの広告ID（例）
     });
-
-// インタースティシャル広告のインスタンス作成
-const interstitial = InterstitialAd.createForAdRequest(intadUnitId, {
-  keywords: ['test'],
-});
 
 const TestPage = () => {
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -46,26 +41,36 @@ const TestPage = () => {
   const [isInterstitialLoaded, setIsInterstitialLoaded] = useState(false);
   const pendingNextQuestionRef = useRef(null);
 
-  // インタースティシャル広告のリスナー設定
-  useEffect(() => {
-    const loadListener = interstitial.addAdEventListener(AdEventType.LOADED, () => {
-      setIsInterstitialLoaded(true);
+  // インタースティシャル広告のインスタンスを管理する ref
+  const interstitialRef = useRef(null);
+
+  // インタースティシャル広告の初期化関数
+  const initInterstitial = () => {
+    const newInterstitial = InterstitialAd.createForAdRequest(intadUnitId, {
+      keywords: ['test'],
     });
-    const dismissListener = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+    const loadListener = newInterstitial.addAdEventListener(AdEventType.LOADED, () => {
+      setIsInterstitialLoaded(true);
+      console.log('Interstitial ad loaded.');
+    });
+    const dismissListener = newInterstitial.addAdEventListener(AdEventType.CLOSED, () => {
       setIsInterstitialLoaded(false);
-      // 広告終了後、もし次の問題進行が保留されていれば実行する
+      console.log('Interstitial ad closed.');
       if (pendingNextQuestionRef.current) {
         pendingNextQuestionRef.current();
         pendingNextQuestionRef.current = null;
       }
-      interstitial.load(); // 次回用に再度読み込む
+      // 再度新規にインタースティシャル広告を初期化
+      interstitialRef.current = initInterstitial();
     });
-    // 初回の読み込み
-    interstitial.load();
-    return () => {
-      loadListener();
-      dismissListener();
-    };
+    newInterstitial.load();
+    // クリーンアップ用にリスナー解除関数を返す
+    return newInterstitial;
+  };
+
+  // コンポーネントマウント時にインタースティシャル広告を初期化
+  useEffect(() => {
+    interstitialRef.current = initInterstitial();
   }, []);
 
   useEffect(() => {
@@ -113,14 +118,20 @@ const TestPage = () => {
   const handleNextQuestion = () => {
     // 現在の問題番号（1-indexed）
     const currentQuestionNumber = questionIndex + 1;
+    console.log('Current Question Number:', currentQuestionNumber);
+
     // 広告表示する問題番号のリスト
     const adTriggerQuestions = [5, 10, 15, 20];
     if (adTriggerQuestions.includes(currentQuestionNumber)) {
-      if (isInterstitialLoaded) {
+      console.log('Ad trigger question reached:', currentQuestionNumber);
+      if (isInterstitialLoaded && interstitialRef.current) {
+        console.log('Interstitial ad is loaded. Showing ad...');
         // 広告終了後に次の問題に進むよう、コールバックを保留
         pendingNextQuestionRef.current = proceedToNextQuestion;
-        interstitial.show();
+        interstitialRef.current.show();
         return;
+      } else {
+        console.log('Interstitial ad not loaded.');
       }
     }
     // 広告表示が不要な場合、または広告が未読込の場合はそのまま進む
