@@ -35,7 +35,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
-    "@expo/cli": "^0.24.13"
+    "@expo/cli": "^0.24.13",
+    "eas-cli": "^16.4.1"
   },
   "private": true
 }
