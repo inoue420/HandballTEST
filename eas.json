@@ -10,7 +10,7 @@
       "cache": {
         "disabled": true
       },
-      "prebuildCommand": "rm -rf .expo && expo prebuild"
+      "prebuildCommand": "npx expo prebuild --platform ios --clean"
     },
     "preview": {
       "distribution": "internal",
@@ -18,14 +18,14 @@
       "cache": {
         "disabled": true
       },
-      "prebuildCommand": "rm -rf .expo && expo prebuild"
+      "prebuildCommand": "npx expo prebuild --platform ios --clean"
     },
     "production": {
       "ios": {},
       "cache": {
         "disabled": true
       },
-      "prebuildCommand": "rm -rf .expo && expo prebuild"
+      "prebuildCommand": "npx expo prebuild --platform ios --clean"
     }
   },
   "submit": {
