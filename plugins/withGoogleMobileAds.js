@@ -4,7 +4,7 @@ const {
   withAndroidManifest,
   withInfoPlist,
   createRunOncePlugin,
-} = require("@expo/config-plugins");
+} = require("expo/config-plugins");
 
 const pkg = { name: "with-google-mobile-ads", version: "1.0.0" };
 
