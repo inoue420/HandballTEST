@@ -10,8 +10,7 @@
       "distribution": "internal",
       "cache": {
         "disabled": true
-      },
-      "prebuildCommand": "rm -rf .expo && mkdir -p .expo/web/cache/production/images && chmod -R u+rwX .expo && npx expo prebuild --platform ios --clean"
+      }
     },
     "preview": {
       "node": "20.20.0",
@@ -19,16 +18,14 @@
       "ios": {},
       "cache": {
         "disabled": true
-      },
-      "prebuildCommand": "rm -rf .expo && mkdir -p .expo/web/cache/production/images && chmod -R u+rwX .expo && npx expo prebuild --platform ios --clean"
+      }
     },
     "production": {
       "node": "20.20.0",
       "ios": {},
       "cache": {
         "disabled": true
-      },
-      "prebuildCommand": "rm -rf .expo && mkdir -p .expo/web/cache/production/images && chmod -R u+rwX .expo && npx expo prebuild --platform ios --clean"
+      }
     }
   },
   "submit": {
