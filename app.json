@@ -24,10 +24,10 @@
       [
         "react-native-google-mobile-ads",
         {
-          "android_app_id": "ca-app-pub-4399954903316919~8218294300",
-          "ios_app_id": "ca-app-pub-4399954903316919~2165399531",
-          "delay_app_measurement_init": true,
-          "user_tracking_usage_description": "許可することで、より関連性の高い広告を表示することができるようになります。"
+          "androidAppId": "ca-app-pub-4399954903316919~8218294300",
+          "iosAppId": "ca-app-pub-4399954903316919~2165399531",
+          "delayAppMeasurementInit": true,
+          "userTrackingUsageDescription": "許可することで、より関連性の高い広告を表示することができるようになります。"
         }
       ]
     ],
