@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/handball_Rules_icon3.png",
     "userInterfaceStyle": "light",
+    "newArchEnabled": false,
     "plugins": [
       [
         "expo-build-properties",
