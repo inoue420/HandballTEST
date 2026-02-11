@@ -30,9 +30,9 @@
           "delayAppMeasurementInit": true,
           "userTrackingUsageDescription": "許可することで、より関連性の高い広告を表示することができるようになります。"
         }
-      ]
+      ],
+      "expo-asset"
     ],
-    
     "splash": {
       "image": "./assets/handball_Rules_icon3_and.png",
       "resizeMode": "contain",
