@@ -134,22 +134,22 @@ if (!loaded) {
     try {
       await AsyncStorage.removeItem('randomIds');
       const prefixCountPairs = [
-        ['1', 1, 3, 1],
-        ['2', 2, 49, 2],
+        ['1', 1, 4, 1],
+        ['2', 2, 56, 2],
         ['3', 1, 4, 1],
-        ['4', 1, 61, 3],
+        ['4', 1, 62, 3],
         ['5', 1, 13, 1],
-        ['6', 1, 24, 1],
-        ['7', 1, 34, 1],
-        ['8', 1, 73, 3],
-        ['9', 1, 9, 1],
-        ['10', 1, 7, 1],
+        ['6', 1, 25, 1],
+        ['7', 1, 36, 1],
+        ['8', 1, 81, 3],
+        ['9', 1, 10, 1],
+        ['10', 1, 14, 1],
         ['11', 1, 6, 1],
         ['12', 1, 11, 1],
         ['13', 1, 15, 1],
-        ['14', 1, 23, 1],
-        ['15', 1, 25, 1],
-        ['16', 1, 23, 2],
+        ['14', 1, 24, 1],
+        ['15', 1, 27, 1],
+        ['16', 1, 25, 2],
         ['17', 1, 9, 1],
         ['18', 1, 8, 1],
         ['19', 1, 2, 1],
@@ -183,22 +183,22 @@ if (!loaded) {
       await AsyncStorage.removeItem('todayIds'); // 既存の todayIds を削除
 
       const ranges = [
-        { prefix: '1', start: 1, end: 1 },
-        { prefix: '2', start: 2, end: 49 },
+        { prefix: '1', start: 1, end: 4 },
+        { prefix: '2', start: 2, end: 56 },
         { prefix: '3', start: 1, end: 4 },
-        { prefix: '4', start: 1, end: 61 },
+        { prefix: '4', start: 1, end: 62 },
         { prefix: '5', start: 1, end: 13 },
-        { prefix: '6', start: 1, end: 24 },
-        { prefix: '7', start: 1, end: 34 },
-        { prefix: '8', start: 1, end: 73 },
-        { prefix: '9', start: 1, end: 9 },
-        { prefix: '10', start: 1, end: 7 },
+        { prefix: '6', start: 1, end: 25 },
+        { prefix: '7', start: 1, end: 36 },
+        { prefix: '8', start: 1, end: 81 },
+        { prefix: '9', start: 1, end: 10 },
+        { prefix: '10', start: 1, end: 14 },
         { prefix: '11', start: 1, end: 6 },
         { prefix: '12', start: 1, end: 11 },
         { prefix: '13', start: 1, end: 15 },
-        { prefix: '14', start: 1, end: 23 },
-        { prefix: '15', start: 1, end: 25 },
-        { prefix: '16', start: 1, end: 23 },
+        { prefix: '14', start: 1, end: 24 },
+        { prefix: '15', start: 1, end: 27 },
+        { prefix: '16', start: 1, end: 25 },
         { prefix: '17', start: 1, end: 9 },
         { prefix: '18', start: 1, end: 8 },
         { prefix: '19', start: 1, end: 2 },
@@ -279,7 +279,7 @@ if (!loaded) {
         />
 
         <CustomButton
-          title="競技規則(2024年版)を見る"
+          title="競技規則(2025年版)を見る"
           onPress={handleRuleList}
         />
 
