@@ -35,3 +35,20 @@ allprojects {
 
 apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"
+
+
+/**
+ * PINNED_GOOGLE_MOBILE_ADS_VERSION
+ * Pin Google Mobile Ads SDK version to avoid Kotlin metadata mismatch.
+ */
+allprojects {
+  configurations.all {
+    resolutionStrategy.eachDependency { details ->
+      if (details.requested.group == "com.google.android.gms"
+   && (["play-services-ads","play-services-ads-lite","play-services-ads-base","play-services-ads-identifier"].contains(details.requested.name)
+       || details.requested.name.startsWith("play-services-measurement"))) {
+        details.useVersion("24.0.0")
+      }
+    }
+  }
+}

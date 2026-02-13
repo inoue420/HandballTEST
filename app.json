@@ -6,15 +6,14 @@
     "orientation": "portrait",
     "icon": "./assets/handball_Rules_icon3.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "plugins": [
       [
         "expo-build-properties",
         {
           "ios": {
             "useFrameworks": "static"
-          },
-          "android": { "kotlinVersion": "2.2.0" }
+          }
         }
       ],
       [
@@ -394,6 +393,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.sharprise.handballrules",
+      "newArchEnabled": true,
       "permissions": [
         "com.google.android.gms.permission.AD_ID"
       ]
