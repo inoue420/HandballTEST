@@ -392,7 +392,7 @@
         "foregroundImage": "./assets/handball_Rules_icon3_and.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.inotake420.handballrules",
+      "package": "com.sharprise.handballrules",
       "permissions": [
         "com.google.android.gms.permission.AD_ID"
       ]
