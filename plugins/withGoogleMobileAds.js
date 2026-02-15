@@ -122,16 +122,15 @@ const withGoogleMobileAds = (config, props = {}) => {
 
 /**
  * ${marker}
- * Pin Google Mobile Ads SDK version to avoid Kotlin metadata mismatch.
+ * Pin only Google Mobile Ads artifacts to avoid Kotlin metadata mismatch.
+ * Do NOT pin ads-identifier / measurement because they don't share the same version scheme.
  */
 allprojects {
   configurations.all {
-    resolutionStrategy.eachDependency { details ->
-      if (details.requested.group == "com.google.android.gms"
-   && (["play-services-ads","play-services-ads-lite","play-services-ads-base","play-services-ads-identifier"].contains(details.requested.name)
-       || details.requested.name.startsWith("play-services-measurement"))) {
-        details.useVersion("${PINNED_ADS_VERSION}")
-      }
+    resolutionStrategy {
+      force "com.google.android.gms:play-services-ads:${PINNED_ADS_VERSION}"
+      force "com.google.android.gms:play-services-ads-lite:${PINNED_ADS_VERSION}"
+      force "com.google.android.gms:play-services-ads-base:${PINNED_ADS_VERSION}"
     }
   }
 }
